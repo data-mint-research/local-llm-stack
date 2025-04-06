@@ -128,6 +128,26 @@ Detailed documentation can be found in the `docs/` directory:
 - [Architecture](docs/architecture.md) - Detailed overview of the system architecture, components, and data flow.
 - [Security](docs/security.md) - Information about security aspects, authentication, and best practices.
 - [GitLab Automation](docs/gitlab-automation.md) - Instructions for automating the GitLab repository setup.
+- [Maintaining Documentation](docs/maintaining-documentation.md) - Guidelines for maintaining the AI-optimized documentation.
+
+### System Documentation
+
+The LOCAL-LLM-Stack includes comprehensive AI-optimized documentation:
+
+- **Machine-Readable Schema**: Structured documentation schema in `docs/schema/`
+- **System Components**: Detailed component documentation in `docs/system/`
+- **System Relationships**: Relationship mapping between components
+- **System Interfaces**: Interface definitions for component interactions
+- **Documentation Templates**: Templates for creating new documentation in `docs/templates/`
+
+### Knowledge Graph
+
+The codebase includes a knowledge graph system for better understanding of the architecture:
+
+- **Entity Extraction**: Tools for extracting entities from the codebase in `tools/entity-extraction/`
+- **Relationship Mapping**: Tools for mapping relationships between entities in `tools/relationship-mapping/`
+- **Graph Visualization**: Visualizations of the system architecture in `docs/diagrams/`
+- **Automated Updates**: Git hooks and CI/CD integration for keeping the knowledge graph up-to-date
 
 ## Data Directories
 
@@ -139,6 +159,18 @@ All data is stored in the `data/` directory:
 - **LibreChat Data**: `data/librechat`
 
 These directories are listed in the `.gitignore` file and are not stored in the repository. They will be created on the first start of the stack.
+
+## Shell Script Library
+
+The LOCAL-LLM-Stack includes a structured shell script library for better maintainability:
+
+- **Core Modules**: Standardized modules in `lib/core/` for common operations
+- **Configuration**: Centralized configuration handling in `lib/core/config.sh`
+- **Docker Operations**: Docker-related functions in `lib/core/docker.sh`
+- **Validation**: Input validation functions in `lib/core/validation.sh`
+- **System Operations**: System-related functions in `lib/core/system.sh`
+- **Error Handling**: Standardized error handling in `lib/core/error.sh`
+- **Logging**: Consistent logging functions in `lib/core/logging.sh`
 
 ## Contributing
 
