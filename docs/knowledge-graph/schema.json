@@ -1,0 +1,285 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "llm": "http://local-llm-stack.org/ontology#",
+    "schema": "http://schema.org/",
+    
+    "name": "rdfs:label",
+    "description": "rdfs:comment",
+    "type": "rdf:type",
+    
+    "Entity": "llm:Entity",
+    "Component": "llm:Component",
+    "Container": "llm:Container",
+    "Script": "llm:Script",
+    "Library": "llm:Library",
+    "Module": "llm:Module",
+    "Function": "llm:Function",
+    "Variable": "llm:Variable",
+    "Parameter": "llm:Parameter",
+    "ConfigParam": "llm:ConfigParam",
+    "Service": "llm:Service",
+    
+    "Relationship": "llm:Relationship",
+    "DependsOn": "llm:DependsOn",
+    "Calls": "llm:Calls",
+    "Imports": "llm:Imports",
+    "Configures": "llm:Configures",
+    "Defines": "llm:Defines",
+    "Uses": "llm:Uses",
+    "ProvidesServiceTo": "llm:ProvidesServiceTo",
+    "StartupDependency": "llm:StartupDependency",
+    "RuntimeDependency": "llm:RuntimeDependency",
+    "ConfigurationDependency": "llm:ConfigurationDependency",
+    
+    "Interface": "llm:Interface",
+    "API": "llm:API",
+    "CLI": "llm:CLI",
+    "APIEndpoint": "llm:APIEndpoint",
+    "CLICommand": "llm:CLICommand",
+    
+    "DataFlow": "llm:DataFlow",
+    "DataFlowStep": "llm:DataFlowStep",
+    
+    "source": "llm:source",
+    "target": "llm:target",
+    "dependsOn": "llm:dependsOn",
+    "calls": "llm:calls",
+    "imports": "llm:imports",
+    "configures": "llm:configures",
+    "defines": "llm:defines",
+    "uses": "llm:uses",
+    "providesServiceTo": "llm:providesServiceTo",
+    "startupDependency": "llm:startupDependency",
+    "runtimeDependency": "llm:runtimeDependency",
+    "configurationDependency": "llm:configurationDependency",
+    
+    "filePath": "llm:filePath",
+    "lineNumber": "llm:lineNumber",
+    "signature": "llm:signature",
+    "returnType": "llm:returnType",
+    "parameterType": "llm:parameterType",
+    "defaultValue": "llm:defaultValue",
+    "required": "llm:required",
+    
+    "exposes": "llm:exposes",
+    "implements": "llm:implements",
+    "hasFunction": "llm:hasFunction",
+    "hasParameter": "llm:hasParameter",
+    "hasStep": "llm:hasStep",
+    "hasEndpoint": "llm:hasEndpoint",
+    "hasCommand": "llm:hasCommand"
+  },
+  
+  "entityTypes": [
+    {
+      "@id": "llm:Entity",
+      "@type": "rdfs:Class",
+      "name": "Entity",
+      "description": "Base class for all entities in the knowledge graph"
+    },
+    {
+      "@id": "llm:Component",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "Component",
+      "description": "A component of the LOCAL-LLM-Stack system"
+    },
+    {
+      "@id": "llm:Container",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Component",
+      "name": "Container",
+      "description": "A Docker container component"
+    },
+    {
+      "@id": "llm:Script",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Component",
+      "name": "Script",
+      "description": "A shell script component"
+    },
+    {
+      "@id": "llm:Library",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Component",
+      "name": "Library",
+      "description": "A library component"
+    },
+    {
+      "@id": "llm:Module",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Component",
+      "name": "Module",
+      "description": "A module component"
+    },
+    {
+      "@id": "llm:Function",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "Function",
+      "description": "A shell function"
+    },
+    {
+      "@id": "llm:Variable",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "Variable",
+      "description": "A shell variable"
+    },
+    {
+      "@id": "llm:Parameter",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "Parameter",
+      "description": "A function parameter"
+    },
+    {
+      "@id": "llm:ConfigParam",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "ConfigParam",
+      "description": "A configuration parameter"
+    },
+    {
+      "@id": "llm:Service",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Entity",
+      "name": "Service",
+      "description": "A service provided by a component"
+    }
+  ],
+  
+  "relationshipTypes": [
+    {
+      "@id": "llm:Relationship",
+      "@type": "rdfs:Class",
+      "name": "Relationship",
+      "description": "Base class for all relationships in the knowledge graph"
+    },
+    {
+      "@id": "llm:DependsOn",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "DependsOn",
+      "description": "A dependency relationship"
+    },
+    {
+      "@id": "llm:Calls",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "Calls",
+      "description": "A function call relationship"
+    },
+    {
+      "@id": "llm:Imports",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "Imports",
+      "description": "An import relationship"
+    },
+    {
+      "@id": "llm:Configures",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "Configures",
+      "description": "A configuration relationship"
+    },
+    {
+      "@id": "llm:Defines",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "Defines",
+      "description": "A definition relationship"
+    },
+    {
+      "@id": "llm:Uses",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "Uses",
+      "description": "A usage relationship"
+    },
+    {
+      "@id": "llm:ProvidesServiceTo",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "ProvidesServiceTo",
+      "description": "A service provision relationship"
+    },
+    {
+      "@id": "llm:StartupDependency",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "StartupDependency",
+      "description": "A startup dependency relationship"
+    },
+    {
+      "@id": "llm:RuntimeDependency",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "RuntimeDependency",
+      "description": "A runtime dependency relationship"
+    },
+    {
+      "@id": "llm:ConfigurationDependency",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Relationship",
+      "name": "ConfigurationDependency",
+      "description": "A configuration dependency relationship"
+    }
+  ],
+  
+  "interfaceTypes": [
+    {
+      "@id": "llm:Interface",
+      "@type": "rdfs:Class",
+      "name": "Interface",
+      "description": "Base class for all interfaces in the knowledge graph"
+    },
+    {
+      "@id": "llm:API",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Interface",
+      "name": "API",
+      "description": "An API interface"
+    },
+    {
+      "@id": "llm:CLI",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Interface",
+      "name": "CLI",
+      "description": "A CLI interface"
+    },
+    {
+      "@id": "llm:APIEndpoint",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Interface",
+      "name": "APIEndpoint",
+      "description": "An API endpoint"
+    },
+    {
+      "@id": "llm:CLICommand",
+      "@type": "rdfs:Class",
+      "subClassOf": "llm:Interface",
+      "name": "CLICommand",
+      "description": "A CLI command"
+    }
+  ],
+  
+  "dataFlowTypes": [
+    {
+      "@id": "llm:DataFlow",
+      "@type": "rdfs:Class",
+      "name": "DataFlow",
+      "description": "A data flow in the system"
+    },
+    {
+      "@id": "llm:DataFlowStep",
+      "@type": "rdfs:Class",
+      "name": "DataFlowStep",
+      "description": "A step in a data flow"
+    }
+  ]
+}

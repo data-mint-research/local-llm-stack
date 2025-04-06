@@ -1,0 +1,86 @@
+graph TD
+    %% Component nodes
+    User[User]
+    LibreChatUI[LibreChat UI]
+    LibreChatBackend[LibreChat Backend]
+    Ollama[Ollama]
+    MongoDB[MongoDB]
+    Meilisearch[Meilisearch]
+    LLMScript[llm Script]
+    ConfigModule[Config Module]
+    OllamaModelLibrary[Ollama Model Library]
+    Disk[Disk Storage]
+    Environment[Environment Variables]
+    
+    %% User Interaction Flow
+    subgraph "User Interaction Flow"
+        User -->|1. user_message| LibreChatUI
+        LibreChatUI -->|2. user_message| LibreChatBackend
+        LibreChatBackend -->|3. inference_request| Ollama
+        Ollama -->|4. inference_response| LibreChatBackend
+        LibreChatBackend -->|5. conversation_record| MongoDB
+        LibreChatBackend -->|6. search_index_update| Meilisearch
+        LibreChatBackend -->|7. llm_response| LibreChatUI
+        LibreChatUI -->|8. llm_response| User
+    end
+    
+    %% Model Loading Flow
+    subgraph "Model Loading Flow"
+        User -->|1. model_add_command| LLMScript
+        LLMScript -->|2. model_pull_request| Ollama
+        Ollama -->|3. model_download_request| OllamaModelLibrary
+        OllamaModelLibrary -->|4. model_data| Ollama
+        Ollama -->|5. model_files| Disk
+        Ollama -->|6. model_pull_response| LLMScript
+        LLMScript -->|7. model_add_result| User
+    end
+    
+    %% Configuration Flow
+    subgraph "Configuration Flow"
+        User -->|1. config_command| LLMScript
+        LLMScript -->|2. config_request| ConfigModule
+        ConfigModule -->|3. read_config_file| Disk
+        Disk -->|4. config_data| ConfigModule
+        ConfigModule -->|5. environment_variables| Environment
+        ConfigModule -->|6. config_response| LLMScript
+        LLMScript -->|7. config_result| User
+    end
+    
+    %% Data Formats
+    classDef text fill:#f9f9f9,stroke:#333,stroke-width:1px
+    classDef json fill:#ffecb3,stroke:#e6ac00,stroke-width:1px
+    classDef bson fill:#b3e6cc,stroke:#339966,stroke-width:1px
+    classDef binary fill:#ffb3b3,stroke:#cc0000,stroke-width:1px
+    classDef function fill:#b3d1ff,stroke:#0052cc,stroke-width:1px
+    classDef file fill:#e6ccff,stroke:#6600cc,stroke-width:1px
+    classDef keyvalue fill:#d9f2d9,stroke:#339933,stroke-width:1px
+    
+    %% Transport Mechanisms
+    linkStyle 0,7,13,20 stroke:#ff9900,stroke-width:2px; %% HTTP User Interface
+    linkStyle 1,6 stroke:#0066cc,stroke-width:2px; %% Internal UI-Backend
+    linkStyle 2,3,5,11,12,14,15,18,19 stroke:#ff9900,stroke-width:2px; %% HTTP API
+    linkStyle 4 stroke:#339966,stroke-width:2px; %% MongoDB Driver
+    linkStyle 8,9,10,16,17 stroke:#666666,stroke-width:2px; %% CLI
+    
+    %% Component Styling
+    classDef user fill:#f2f2f2,stroke:#333333,stroke-width:2px
+    classDef ui fill:#b3e0ff,stroke:#0066cc,stroke-width:2px
+    classDef backend fill:#ffcc99,stroke:#ff8000,stroke-width:2px
+    classDef database fill:#d9f2d9,stroke:#339933,stroke-width:2px
+    classDef search fill:#e6ccff,stroke:#6600cc,stroke-width:2px
+    classDef script fill:#ffe6cc,stroke:#ff9933,stroke-width:2px
+    classDef library fill:#ffb3b3,stroke:#cc0000,stroke-width:2px
+    classDef storage fill:#f2f2f2,stroke:#666666,stroke-width:2px
+    classDef env fill:#e6f2ff,stroke:#0066cc,stroke-width:2px
+    
+    class User user
+    class LibreChatUI ui
+    class LibreChatBackend backend
+    class Ollama backend
+    class MongoDB database
+    class Meilisearch search
+    class LLMScript script
+    class ConfigModule library
+    class OllamaModelLibrary library
+    class Disk storage
+    class Environment env

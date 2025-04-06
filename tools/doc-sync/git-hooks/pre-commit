@@ -1,0 +1,96 @@
+#!/bin/bash
+# pre-commit - Git pre-commit hook to update documentation
+# This hook automatically updates documentation when code changes
+
+# Get the absolute path of the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+DOC_SYNC_DIR="$ROOT_DIR/tools/doc-sync"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+# Check if any relevant files have changed
+check_changed_files() {
+    # Get the list of changed files
+    local changed_files=$(git diff --cached --name-only)
+    
+    # Check if any shell scripts have changed
+    local shell_scripts_changed=false
+    for file in $changed_files; do
+        if [[ "$file" == lib/core/*.sh || "$file" == llm ]]; then
+            shell_scripts_changed=true
+            break
+        fi
+    done
+    
+    # Check if any Docker Compose files have changed
+    local docker_files_changed=false
+    for file in $changed_files; do
+        if [[ "$file" == core/*.yml || "$file" == core/*.yaml ]]; then
+            docker_files_changed=true
+            break
+        fi
+    done
+    
+    # Check if any documentation files have changed
+    local doc_files_changed=false
+    for file in $changed_files; do
+        if [[ "$file" == docs/system/*.yaml ]]; then
+            doc_files_changed=true
+            break
+        fi
+    done
+    
+    # Return true if any relevant files have changed
+    if [[ "$shell_scripts_changed" == true || "$docker_files_changed" == true ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Update documentation
+update_documentation() {
+    echo -e "${YELLOW}Updating documentation...${NC}"
+    
+    # Run the documentation extraction script
+    if ! "$DOC_SYNC_DIR/extract-docs.sh"; then
+        echo -e "${RED}Documentation update failed. Please fix the issues and try again.${NC}"
+        return 1
+    fi
+    
+    echo -e "${GREEN}Documentation updated successfully.${NC}"
+    
+    # Add the updated documentation files to the commit
+    git add "$ROOT_DIR/docs/system/components.yaml"
+    git add "$ROOT_DIR/docs/system/relationships.yaml"
+    git add "$ROOT_DIR/docs/system/interfaces.yaml"
+    
+    return 0
+}
+
+# Main function
+main() {
+    echo "Running pre-commit hook..."
+    
+    # Check if any relevant files have changed
+    if check_changed_files; then
+        echo "Relevant files have changed. Updating documentation..."
+        if ! update_documentation; then
+            echo -e "${RED}Pre-commit hook failed. Documentation update failed.${NC}"
+            exit 1
+        fi
+    else
+        echo "No relevant files have changed. Skipping documentation update."
+    fi
+    
+    echo -e "${GREEN}Pre-commit hook completed successfully.${NC}"
+    exit 0
+}
+
+# Run the main function
+main

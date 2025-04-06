@@ -1,53 +1,55 @@
 #!/bin/bash
 # update_librechat_secrets.sh - Update LibreChat secrets from main config
+# This file has been refactored to use the new core library
 
-# Source utility functions
+# Source core library modules
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils.sh"
+source "$SCRIPT_DIR/core/logging.sh"
+source "$SCRIPT_DIR/core/error.sh"
+source "$SCRIPT_DIR/core/system.sh"
+source "$SCRIPT_DIR/core/config.sh"
 
-echo -e "${BLUE}Checking LibreChat secrets...${NC}"
+log_info "Checking LibreChat secrets..."
 
 # Check if config/.env exists
-if [[ ! -f "config/.env" ]]; then
-  echo -e "${RED}Main configuration file not found.${NC}"
-  exit 1
+if [[ ! -f "$ENV_FILE" ]]; then
+  handle_error $ERR_FILE_NOT_FOUND "Main configuration file not found"
 fi
 
 # Check if config/librechat/.env exists
-if [[ ! -f "config/librechat/.env" ]]; then
-  echo -e "${RED}LibreChat configuration file not found.${NC}"
-  exit 1
+librechat_env="$CONFIG_DIR/librechat/.env"
+if [[ ! -f "$librechat_env" ]]; then
+  handle_error $ERR_FILE_NOT_FOUND "LibreChat configuration file not found"
 fi
 
 # Get secrets from main config
-jwt_secret=$(grep -E "^JWT_SECRET=" config/.env | cut -d= -f2)
-jwt_refresh_secret=$(grep -E "^JWT_REFRESH_SECRET=" config/.env | cut -d= -f2)
+jwt_secret=$(get_config "JWT_SECRET")
+jwt_refresh_secret=$(get_config "JWT_REFRESH_SECRET")
 
 # Get secrets from LibreChat config
-librechat_jwt_secret=$(grep -E "^JWT_SECRET=" config/librechat/.env | cut -d= -f2)
-librechat_jwt_refresh_secret=$(grep -E "^JWT_REFRESH_SECRET=" config/librechat/.env | cut -d= -f2)
+librechat_jwt_secret=$(grep -E "^JWT_SECRET=" "$librechat_env" | cut -d= -f2)
+librechat_jwt_refresh_secret=$(grep -E "^JWT_REFRESH_SECRET=" "$librechat_env" | cut -d= -f2)
 
 # Debug output
-echo -e "${YELLOW}Main JWT_SECRET: '$jwt_secret'${NC}"
-echo -e "${YELLOW}LibreChat JWT_SECRET: '$librechat_jwt_secret'${NC}"
+log_debug "Main JWT_SECRET: '$jwt_secret'"
+log_debug "LibreChat JWT_SECRET: '$librechat_jwt_secret'"
 
 # Check if LibreChat secrets need to be updated
 if [[ -z "$librechat_jwt_secret" || -z "$librechat_jwt_refresh_secret" ]]; then
-  echo -e "${YELLOW}LibreChat JWT secrets are not set. Updating from main config...${NC}"
+  log_warn "LibreChat JWT secrets are not set. Updating from main config..."
 
   # Create backup of LibreChat .env file
-  LIBRECHAT_BACKUP="config/librechat/.env.backup-$(date +%Y%m%d%H%M%S)"
-  cp "config/librechat/.env" "$LIBRECHAT_BACKUP" 2> /dev/null
+  LIBRECHAT_BACKUP=$(backup_file "$librechat_env")
 
   # Update the JWT secrets in the LibreChat .env file
-  sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$jwt_secret|" config/librechat/.env
-  sed -i "s|^JWT_REFRESH_SECRET=.*|JWT_REFRESH_SECRET=$jwt_refresh_secret|" config/librechat/.env
+  sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$jwt_secret|" "$librechat_env"
+  sed -i "s|^JWT_REFRESH_SECRET=.*|JWT_REFRESH_SECRET=$jwt_refresh_secret|" "$librechat_env"
 
   # Verify the update
-  updated_jwt_secret=$(grep -E "^JWT_SECRET=" config/librechat/.env | cut -d= -f2)
-  echo -e "${YELLOW}Updated JWT_SECRET: $updated_jwt_secret${NC}"
+  updated_jwt_secret=$(grep -E "^JWT_SECRET=" "$librechat_env" | cut -d= -f2)
+  log_debug "Updated JWT_SECRET: $updated_jwt_secret"
 
-  echo -e "${GREEN}LibreChat JWT secrets updated.${NC}"
+  log_success "LibreChat JWT secrets updated."
 else
-  echo -e "${GREEN}LibreChat JWT secrets are already set.${NC}"
+  log_success "LibreChat JWT secrets are already set."
 fi

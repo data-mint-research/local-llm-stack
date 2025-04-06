@@ -1,16 +1,20 @@
 #!/bin/bash
-# generate_secrets_direct.sh - Generate secure secrets for LOCAL-LLM-Stack
+# generate_secrets.sh - Generate secure secrets for LOCAL-LLM-Stack
+# This file has been refactored to use the new core library
 
-# Source utility functions
+# Source core library modules
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils.sh"
+source "$SCRIPT_DIR/core/logging.sh"
+source "$SCRIPT_DIR/core/error.sh"
+source "$SCRIPT_DIR/core/system.sh"
+source "$SCRIPT_DIR/core/config.sh"
 
-echo -e "${BLUE}Generating secure secrets...${NC}"
+log_info "Generating secure secrets..."
 
 # Ensure the config directory exists
-if [[ ! -d "config" ]]; then
-  echo -e "${YELLOW}Creating config directory...${NC}"
-  mkdir -p config
+ensure_directory "$CONFIG_DIR"
+if [[ $? -ne 0 ]]; then
+  handle_error $ERR_PERMISSION_DENIED "Failed to create config directory"
 fi
 
 # Generate secure secrets
@@ -24,22 +28,21 @@ CREDS_KEY=$(generate_hex_string 64)
 CREDS_IV=$(generate_hex_string 32)
 
 # Create backup if the file exists
-if [[ -f "config/.env" ]]; then
-  BACKUP_FILE="config/.env.backup-$(date +%Y%m%d%H%M%S)"
-  cp "config/.env" "$BACKUP_FILE" 2> /dev/null
+if [[ -f "$ENV_FILE" ]]; then
+  BACKUP_FILE=$(backup_file "$ENV_FILE")
   if [[ $? -eq 0 ]]; then
-    echo -e "${GREEN}Backup created at $BACKUP_FILE${NC}"
+    log_success "Backup created at $BACKUP_FILE"
   else
-    echo -e "${YELLOW}Warning: Could not create backup${NC}"
+    log_warn "Could not create backup"
     BACKUP_FILE="No backup created"
   fi
 else
-  echo -e "${YELLOW}No existing configuration file to backup${NC}"
+  log_warn "No existing configuration file to backup"
   BACKUP_FILE="No backup needed"
 fi
 
 # Create the .env file with the secrets directly
-cat > config/.env << EOF
+cat > "$ENV_FILE" << EOF
 # LOCAL-LLM-Stack Configuration
 
 # Component Versions
@@ -87,32 +90,32 @@ ALLOW_SOCIAL_LOGIN=false
 ALLOW_REGISTRATION=true
 ADMIN_EMAIL=admin@local.host
 EOF
+
 if [[ $? -eq 0 ]]; then
-  echo -e "${GREEN}Secure secrets generated and saved to config/.env${NC}"
+  log_success "Secure secrets generated and saved to $ENV_FILE"
 
   # Update LibreChat .env file if it exists
-  if [[ -f "config/librechat/.env" ]]; then
-    echo -e "${BLUE}Updating LibreChat environment file with new secrets...${NC}"
+  librechat_env="$CONFIG_DIR/librechat/.env"
+  if [[ -f "$librechat_env" ]]; then
+    log_info "Updating LibreChat environment file with new secrets..."
 
     # Create backup of LibreChat .env file
-    LIBRECHAT_BACKUP="config/librechat/.env.backup-$(date +%Y%m%d%H%M%S)"
-    cp "config/librechat/.env" "$LIBRECHAT_BACKUP" 2> /dev/null
+    LIBRECHAT_BACKUP=$(backup_file "$librechat_env")
 
     # Update the JWT secrets in the LibreChat .env file
-    sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" config/librechat/.env
-    sed -i "s/^JWT_REFRESH_SECRET=.*/JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET/" config/librechat/.env
+    sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" "$librechat_env"
+    sed -i "s/^JWT_REFRESH_SECRET=.*/JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET/" "$librechat_env"
 
-    echo -e "${GREEN}LibreChat environment file updated.${NC}"
+    log_success "LibreChat environment file updated."
   fi
 
-  echo -e "${YELLOW}IMPORTANT: Keep these secrets safe!${NC}"
-  echo -e "${YELLOW}LibreChat Admin password: $ADMIN_PASSWORD${NC}"
-  echo -e "${YELLOW}Grafana Admin password: $GRAFANA_ADMIN_PASSWORD${NC}"
+  log_warn "IMPORTANT: Keep these secrets safe!"
+  log_warn "LibreChat Admin password: $ADMIN_PASSWORD"
+  log_warn "Grafana Admin password: $GRAFANA_ADMIN_PASSWORD"
   if [[ "$BACKUP_FILE" != "No backup needed" && "$BACKUP_FILE" != "No backup created" ]]; then
-    echo -e "${YELLOW}If you need to restore the original configuration, use:${NC}"
-    echo -e "${YELLOW}cp $BACKUP_FILE config/.env${NC}"
+    log_warn "If you need to restore the original configuration, use:"
+    log_warn "cp $BACKUP_FILE $ENV_FILE"
   fi
 else
-  echo -e "${RED}Error: Failed to write configuration file${NC}"
-  exit 1
+  handle_error $ERR_CONFIG_ERROR "Failed to write configuration file"
 fi

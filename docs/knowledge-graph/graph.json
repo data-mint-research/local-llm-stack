@@ -1,0 +1,41 @@
+{
+  "@context": {
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "llm": "http://local-llm-stack.org/ontology#",
+    "name": "rdfs:label",
+    "description": "rdfs:comment",
+    "type": "rdf:type",
+    "component": "llm:Component",
+    "container": "llm:Container",
+    "script": "llm:Script",
+    "library": "llm:Library",
+    "module": "llm:Module",
+    "relationship": "llm:Relationship",
+    "interface": "llm:Interface",
+    "api": "llm:API",
+    "cli": "llm:CLI",
+    "function": "llm:Function",
+    "dataFlow": "llm:DataFlow",
+    "source": "llm:source",
+    "target": "llm:target",
+    "dependsOn": "llm:dependsOn",
+    "providesServiceTo": "llm:providesServiceTo",
+    "startupDependency": "llm:startupDependency",
+    "runtimeDependency": "llm:runtimeDependency",
+    "configurationDependency": "llm:configurationDependency",
+    "uses": "llm:uses",
+    "exposes": "llm:exposes",
+    "implements": "llm:implements",
+    "hasStep": "llm:hasStep"
+  },
+  "@graph": [
+    {
+      "@id": "llm:placeholder",
+      "@type": "llm:Component",
+      "name": "Placeholder Knowledge Graph",
+      "description": "This is a placeholder knowledge graph. To generate the full knowledge graph, install yq and run ./tools/knowledge-graph/generate-graph.sh"
+    }
+  ]
+}

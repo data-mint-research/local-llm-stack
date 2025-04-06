@@ -1,0 +1,54 @@
+#!/bin/bash
+# pre-commit - Git hook to update the knowledge graph before committing
+# This script updates the knowledge graph when changes are detected in the codebase
+
+# Get the absolute path of the repository root
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+# Check if the knowledge graph update script exists
+if [[ ! -f "$REPO_ROOT/tools/knowledge-graph/update.sh" ]]; then
+    echo -e "${YELLOW}Warning: Knowledge graph update script not found. Skipping knowledge graph update.${NC}"
+    exit 0
+fi
+
+# Get the list of staged files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACMR)
+
+# Filter for shell scripts and YAML documentation
+SHELL_SCRIPTS=$(echo "$STAGED_FILES" | grep -E '\.sh$')
+YAML_DOCS=$(echo "$STAGED_FILES" | grep -E '\.yaml$' | grep -E 'docs/system/')
+
+# Combine the results
+RELEVANT_CHANGES=$(echo -e "$SHELL_SCRIPTS\n$YAML_DOCS" | sort -u)
+
+# If no relevant changes, exit
+if [[ -z "$RELEVANT_CHANGES" ]]; then
+    echo -e "${GREEN}No relevant changes detected. Skipping knowledge graph update.${NC}"
+    exit 0
+fi
+
+echo "Detected changes in the following files:"
+echo "$RELEVANT_CHANGES"
+
+# Update the knowledge graph
+echo "Updating knowledge graph..."
+"$REPO_ROOT/tools/knowledge-graph/update.sh"
+
+# Check if the update was successful
+if [[ $? -ne 0 ]]; then
+    echo -e "${RED}Error: Knowledge graph update failed. Please fix the errors and try again.${NC}"
+    exit 1
+fi
+
+# Add the updated knowledge graph files to the commit
+echo "Adding updated knowledge graph files to the commit..."
+git add "$REPO_ROOT/docs/knowledge-graph/"
+
+echo -e "${GREEN}Knowledge graph updated successfully!${NC}"
+exit 0

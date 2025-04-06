@@ -1,0 +1,183 @@
+# LOCAL-LLM-Stack Relationships Documentation
+# This file documents all system relationships in a machine-readable format
+
+relationships:
+  # Component Dependencies
+  - source: "librechat"
+    target: "ollama"
+    type: "depends_on"
+    description: "LibreChat requires Ollama for LLM inference"
+    interface: "http_api"
+    required: true
+  
+  - source: "librechat"
+    target: "mongodb"
+    type: "depends_on"
+    description: "LibreChat requires MongoDB for data storage"
+    interface: "mongodb_driver"
+    required: true
+  
+  - source: "librechat"
+    target: "meilisearch"
+    type: "depends_on"
+    description: "LibreChat requires Meilisearch for search functionality"
+    interface: "http_api"
+    required: true
+  
+  - source: "ollama"
+    target: "librechat"
+    type: "provides_service_to"
+    description: "Ollama provides LLM inference to LibreChat"
+    interface: "http_api"
+    required: false
+  
+  - source: "mongodb"
+    target: "librechat"
+    type: "provides_service_to"
+    description: "MongoDB provides data storage to LibreChat"
+    interface: "mongodb_driver"
+    required: false
+  
+  - source: "meilisearch"
+    target: "librechat"
+    type: "provides_service_to"
+    description: "Meilisearch provides search functionality to LibreChat"
+    interface: "http_api"
+    required: false
+  
+  # Startup Dependencies
+  - source: "librechat"
+    target: "mongodb"
+    type: "startup_dependency"
+    description: "LibreChat must start after MongoDB is healthy"
+    condition: "service_healthy"
+  
+  - source: "librechat"
+    target: "meilisearch"
+    type: "startup_dependency"
+    description: "LibreChat must start after Meilisearch is healthy"
+    condition: "service_healthy"
+  
+  - source: "librechat"
+    target: "ollama"
+    type: "startup_dependency"
+    description: "LibreChat must start after Ollama is healthy"
+    condition: "service_healthy"
+  
+  # Runtime Dependencies
+  - source: "llm"
+    target: "docker"
+    type: "runtime_dependency"
+    description: "llm script requires Docker to be installed and running"
+    condition: "docker_available"
+  
+  - source: "llm"
+    target: "docker-compose"
+    type: "runtime_dependency"
+    description: "llm script requires Docker Compose to be installed"
+    condition: "docker_compose_available"
+  
+  # Configuration Dependencies
+  - source: "librechat"
+    target: "config/.env"
+    type: "configuration_dependency"
+    description: "LibreChat requires configuration from main .env file"
+    condition: "file_exists"
+  
+  - source: "librechat"
+    target: "config/librechat/librechat.yaml"
+    type: "configuration_dependency"
+    description: "LibreChat requires configuration from librechat.yaml file"
+    condition: "file_exists"
+  
+  - source: "ollama"
+    target: "config/.env"
+    type: "configuration_dependency"
+    description: "Ollama requires configuration from main .env file"
+    condition: "file_exists"
+  
+  - source: "mongodb"
+    target: "config/.env"
+    type: "configuration_dependency"
+    description: "MongoDB requires configuration from main .env file"
+    condition: "file_exists"
+  
+  - source: "meilisearch"
+    target: "config/.env"
+    type: "configuration_dependency"
+    description: "Meilisearch requires configuration from main .env file"
+    condition: "file_exists"
+  
+  # Library Dependencies
+  - source: "llm"
+    target: "lib/core/logging.sh"
+    type: "depends_on"
+    description: "llm script depends on logging library"
+    required: true
+  
+  - source: "llm"
+    target: "lib/core/error.sh"
+    type: "depends_on"
+    description: "llm script depends on error handling library"
+    required: true
+  
+  - source: "llm"
+    target: "lib/core/config.sh"
+    type: "depends_on"
+    description: "llm script depends on configuration library"
+    required: true
+  
+  - source: "llm"
+    target: "lib/common.sh"
+    type: "depends_on"
+    description: "llm script depends on common utilities library"
+    required: true
+  
+  - source: "lib/core/config.sh"
+    target: "lib/core/logging.sh"
+    type: "depends_on"
+    description: "config.sh depends on logging library"
+    required: true
+  
+  - source: "lib/core/config.sh"
+    target: "lib/core/error.sh"
+    type: "depends_on"
+    description: "config.sh depends on error handling library"
+    required: true
+  
+  - source: "lib/core/config.sh"
+    target: "lib/core/system.sh"
+    type: "depends_on"
+    description: "config.sh depends on system operations library"
+    required: true
+  
+  - source: "lib/core/config.sh"
+    target: "lib/core/validation.sh"
+    type: "depends_on"
+    description: "config.sh depends on validation library"
+    required: true
+  
+  # Network Dependencies
+  - source: "ollama"
+    target: "llm-stack-network"
+    type: "depends_on"
+    description: "Ollama requires the llm-stack-network for communication"
+    required: true
+  
+  - source: "mongodb"
+    target: "llm-stack-network"
+    type: "depends_on"
+    description: "MongoDB requires the llm-stack-network for communication"
+    required: true
+  
+  - source: "meilisearch"
+    target: "llm-stack-network"
+    type: "depends_on"
+    description: "Meilisearch requires the llm-stack-network for communication"
+    required: true
+  
+  - source: "librechat"
+    target: "llm-stack-network"
+    type: "depends_on"
+    description: "LibreChat requires the llm-stack-network for communication"
+    required: true

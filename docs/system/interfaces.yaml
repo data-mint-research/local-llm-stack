@@ -1,0 +1,559 @@
+# LOCAL-LLM-Stack Interfaces Documentation
+# This file documents all system interfaces in a machine-readable format
+
+# API Interfaces
+api_interfaces:
+  - component: "ollama"
+    interface_type: "http_api"
+    base_url: "http://ollama:11434"
+    endpoints:
+      - path: "/api/generate"
+        method: "POST"
+        description: "Generate text from a prompt"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "model"
+              type: "string"
+              required: true
+              description: "Name of the model to use"
+            - name: "prompt"
+              type: "string"
+              required: true
+              description: "Prompt to generate text from"
+            - name: "system"
+              type: "string"
+              required: false
+              description: "System message to use"
+            - name: "template"
+              type: "string"
+              required: false
+              description: "Prompt template to use"
+            - name: "context"
+              type: "array"
+              required: false
+              description: "Context for the model"
+            - name: "options"
+              type: "object"
+              required: false
+              description: "Additional options for generation"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "model"
+              type: "string"
+              description: "Name of the model used"
+            - name: "response"
+              type: "string"
+              description: "Generated text"
+            - name: "done"
+              type: "boolean"
+              description: "Whether generation is complete"
+      
+      - path: "/api/chat"
+        method: "POST"
+        description: "Chat with a model"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "model"
+              type: "string"
+              required: true
+              description: "Name of the model to use"
+            - name: "messages"
+              type: "array"
+              required: true
+              description: "Array of messages in the conversation"
+            - name: "stream"
+              type: "boolean"
+              required: false
+              description: "Whether to stream the response"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "model"
+              type: "string"
+              description: "Name of the model used"
+            - name: "message"
+              type: "object"
+              description: "Response message"
+            - name: "done"
+              type: "boolean"
+              description: "Whether generation is complete"
+      
+      - path: "/api/tags"
+        method: "GET"
+        description: "List available models"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "models"
+              type: "array"
+              description: "List of available models"
+      
+      - path: "/api/pull"
+        method: "POST"
+        description: "Pull a model from the Ollama library"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "name"
+              type: "string"
+              required: true
+              description: "Name of the model to pull"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "status"
+              type: "string"
+              description: "Status of the pull operation"
+      
+      - path: "/api/delete"
+        method: "DELETE"
+        description: "Delete a model"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "name"
+              type: "string"
+              required: true
+              description: "Name of the model to delete"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "status"
+              type: "string"
+              description: "Status of the delete operation"
+  
+  - component: "librechat"
+    interface_type: "http_api"
+    base_url: "http://librechat:3080"
+    endpoints:
+      - path: "/api/auth/login"
+        method: "POST"
+        description: "Authenticate user"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "email"
+              type: "string"
+              required: true
+              description: "User email"
+            - name: "password"
+              type: "string"
+              required: true
+              description: "User password"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "token"
+              type: "string"
+              description: "JWT token"
+            - name: "user"
+              type: "object"
+              description: "User information"
+      
+      - path: "/api/ask"
+        method: "POST"
+        description: "Ask a question to the model"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "endpoint"
+              type: "string"
+              required: true
+              description: "Endpoint to use (e.g., 'ollama')"
+            - name: "message"
+              type: "string"
+              required: true
+              description: "Message to send"
+            - name: "model"
+              type: "string"
+              required: true
+              description: "Model to use"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "response"
+              type: "string"
+              description: "Model response"
+      
+      - path: "/api/conversations"
+        method: "GET"
+        description: "Get user conversations"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "conversations"
+              type: "array"
+              description: "List of conversations"
+      
+      - path: "/health"
+        method: "GET"
+        description: "Check service health"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "status"
+              type: "string"
+              description: "Health status"
+  
+  - component: "meilisearch"
+    interface_type: "http_api"
+    base_url: "http://meilisearch:7700"
+    endpoints:
+      - path: "/health"
+        method: "GET"
+        description: "Check service health"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "status"
+              type: "string"
+              description: "Health status"
+      
+      - path: "/indexes"
+        method: "GET"
+        description: "List all indexes"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "results"
+              type: "array"
+              description: "List of indexes"
+
+# CLI Interfaces
+cli_interfaces:
+  - component: "llm_script"
+    commands:
+      - name: "start"
+        description: "Start all components"
+        function: "start_command"
+        parameters: []
+      
+      - name: "stop"
+        description: "Stop all components"
+        function: "stop_command"
+        parameters: []
+      
+      - name: "status"
+        description: "Show component status"
+        function: "status_command"
+        parameters: []
+      
+      - name: "debug"
+        description: "Start in debug mode"
+        function: "debug_command"
+        parameters: []
+      
+      - name: "models"
+        description: "Manage models"
+        function: "models_command"
+        subcommands:
+          - name: "list"
+            description: "List available models"
+            function: "list_models"
+            parameters: []
+          
+          - name: "add"
+            description: "Add a new model"
+            function: "add_model"
+            parameters:
+              - name: "model_name"
+                type: "string"
+                required: true
+                description: "Name of the model to add"
+          
+          - name: "remove"
+            description: "Remove a model"
+            function: "remove_model"
+            parameters:
+              - name: "model_name"
+                type: "string"
+                required: true
+                description: "Name of the model to remove"
+      
+      - name: "config"
+        description: "Manage configuration"
+        function: "config_command"
+        subcommands:
+          - name: "edit"
+            description: "Edit configuration file"
+            function: "edit_config"
+            parameters: []
+          
+          - name: "show"
+            description: "Show configuration"
+            function: "show_config"
+            parameters: []
+      
+      - name: "generate-secrets"
+        description: "Generate secure secrets"
+        function: "generate_secrets_command"
+        parameters: []
+      
+      - name: "help"
+        description: "Show help information"
+        function: "help_command"
+        parameters:
+          - name: "command"
+            type: "string"
+            required: false
+            description: "Command to show help for"
+
+# Shell Functions
+shell_functions:
+  - file: "lib/core/config.sh"
+    functions:
+      - name: "init_config"
+        description: "Initialize configuration with default values"
+        parameters: []
+        returns: "Error code (0 for success)"
+      
+      - name: "load_config"
+        description: "Load configuration from .env file"
+        parameters:
+          - name: "env_file"
+            type: "string"
+            required: false
+            description: "Path to .env file (defaults to $ENV_FILE)"
+        returns: "Error code (0 for success, non-zero for failure)"
+      
+      - name: "save_config"
+        description: "Save configuration to .env file"
+        parameters:
+          - name: "env_file"
+            type: "string"
+            required: false
+            description: "Path to .env file (defaults to $ENV_FILE)"
+          - name: "variables"
+            type: "array"
+            required: true
+            description: "Array of variables to save (format: KEY=VALUE)"
+        returns: "Error code (0 for success, non-zero for failure)"
+      
+      - name: "get_config"
+        description: "Get a configuration value"
+        parameters:
+          - name: "key"
+            type: "string"
+            required: true
+            description: "Configuration key"
+          - name: "default_value"
+            type: "string"
+            required: false
+            description: "Default value if key is not found"
+        returns: "Configuration value"
+      
+      - name: "set_config"
+        description: "Set a configuration value"
+        parameters:
+          - name: "key"
+            type: "string"
+            required: true
+            description: "Configuration key"
+          - name: "value"
+            type: "string"
+            required: true
+            description: "Configuration value"
+        returns: "Error code (0 for success)"
+      
+      - name: "update_env_vars"
+        description: "Update environment variables in a file"
+        parameters:
+          - name: "env_file"
+            type: "string"
+            required: true
+            description: "Path to .env file"
+          - name: "vars"
+            type: "array"
+            required: true
+            description: "Array of variables to update (format: KEY=VALUE)"
+        returns: "Error code (0 for success, non-zero for failure)"
+      
+      - name: "validate_config"
+        description: "Validate configuration"
+        parameters: []
+        returns: "Error code (0 for success, non-zero for failure)"
+      
+      - name: "check_secrets"
+        description: "Check if secrets are generated and generate them if needed"
+        parameters: []
+        returns: "Error code (0 for success)"
+      
+      - name: "generate_secrets"
+        description: "Generate secure secrets"
+        parameters: []
+        returns: "Error code (0 for success)"
+      
+      - name: "update_librechat_secrets"
+        description: "Update LibreChat secrets from main config"
+        parameters: []
+        returns: "Error code (0 for success)"
+
+# Data Flows
+data_flows:
+  - name: "user_interaction"
+    description: "Flow of data when a user interacts with the system"
+    steps:
+      - step: 1
+        source: "user"
+        target: "librechat_ui"
+        data: "user_message"
+        format: "text"
+        transport: "http"
+      
+      - step: 2
+        source: "librechat_ui"
+        target: "librechat_backend"
+        data: "user_message"
+        format: "json"
+        transport: "internal"
+      
+      - step: 3
+        source: "librechat_backend"
+        target: "ollama"
+        data: "inference_request"
+        format: "json"
+        transport: "http"
+        endpoint: "/api/generate"
+      
+      - step: 4
+        source: "ollama"
+        target: "librechat_backend"
+        data: "inference_response"
+        format: "json"
+        transport: "http"
+      
+      - step: 5
+        source: "librechat_backend"
+        target: "mongodb"
+        data: "conversation_record"
+        format: "bson"
+        transport: "mongodb_driver"
+      
+      - step: 6
+        source: "librechat_backend"
+        target: "meilisearch"
+        data: "search_index_update"
+        format: "json"
+        transport: "http"
+      
+      - step: 7
+        source: "librechat_backend"
+        target: "librechat_ui"
+        data: "llm_response"
+        format: "json"
+        transport: "internal"
+      
+      - step: 8
+        source: "librechat_ui"
+        target: "user"
+        data: "llm_response"
+        format: "text"
+        transport: "http"
+  
+  - name: "model_loading"
+    description: "Flow of data when loading a model"
+    steps:
+      - step: 1
+        source: "user"
+        target: "llm_script"
+        data: "model_add_command"
+        format: "text"
+        transport: "cli"
+      
+      - step: 2
+        source: "llm_script"
+        target: "ollama"
+        data: "model_pull_request"
+        format: "json"
+        transport: "http"
+        endpoint: "/api/pull"
+      
+      - step: 3
+        source: "ollama"
+        target: "ollama_model_library"
+        data: "model_download_request"
+        format: "http"
+        transport: "http"
+      
+      - step: 4
+        source: "ollama_model_library"
+        target: "ollama"
+        data: "model_data"
+        format: "binary"
+        transport: "http"
+      
+      - step: 5
+        source: "ollama"
+        target: "disk"
+        data: "model_files"
+        format: "binary"
+        transport: "file_system"
+      
+      - step: 6
+        source: "ollama"
+        target: "llm_script"
+        data: "model_pull_response"
+        format: "json"
+        transport: "http"
+      
+      - step: 7
+        source: "llm_script"
+        target: "user"
+        data: "model_add_result"
+        format: "text"
+        transport: "cli"
+  
+  - name: "configuration_flow"
+    description: "Flow of data during configuration"
+    steps:
+      - step: 1
+        source: "user"
+        target: "llm_script"
+        data: "config_command"
+        format: "text"
+        transport: "cli"
+      
+      - step: 2
+        source: "llm_script"
+        target: "config_module"
+        data: "config_request"
+        format: "function_call"
+        transport: "internal"
+      
+      - step: 3
+        source: "config_module"
+        target: "disk"
+        data: "read_config_file"
+        format: "file_read"
+        transport: "file_system"
+      
+      - step: 4
+        source: "disk"
+        target: "config_module"
+        data: "config_data"
+        format: "text"
+        transport: "file_system"
+      
+      - step: 5
+        source: "config_module"
+        target: "environment"
+        data: "environment_variables"
+        format: "key_value"
+        transport: "internal"
+      
+      - step: 6
+        source: "config_module"
+        target: "llm_script"
+        data: "config_response"
+        format: "function_return"
+        transport: "internal"
+      
+      - step: 7
+        source: "llm_script"
+        target: "user"
+        data: "config_result"
+        format: "text"
+        transport: "cli"

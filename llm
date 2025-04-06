@@ -1,10 +1,21 @@
 #!/bin/bash
 # llm - Unified CLI for LOCAL-LLM-STACK
+# This file has been refactored to use the new core library
 
 # Get the absolute path of the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Script directory: $SCRIPT_DIR"
+
+# Source core library modules directly with absolute paths
+echo "Sourcing logging.sh from: $SCRIPT_DIR/lib/core/logging.sh"
+source "$SCRIPT_DIR/lib/core/logging.sh"
+echo "Sourcing error.sh from: $SCRIPT_DIR/lib/core/error.sh"
+source "$SCRIPT_DIR/lib/core/error.sh"
+echo "Sourcing config.sh from: $SCRIPT_DIR/lib/core/config.sh"
+source "$SCRIPT_DIR/lib/core/config.sh"
 
 # Source common functions
+echo "Sourcing common.sh from: $SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/common.sh"
 
 # Display usage information with improved formatting
@@ -32,7 +43,7 @@ show_usage() {
 # Main command router
 main() {
   # Change to the base directory
-  cd "$SCRIPT_DIR" || handle_error 1 "Failed to change to script directory"
+  cd "$SCRIPT_DIR" || handle_error $ERR_FILE_NOT_FOUND "Failed to change to script directory"
   
   local command="$1"
   shift || true
@@ -45,7 +56,7 @@ main() {
   
   # Check if the command exists
   if [[ ! " ${!COMMANDS[@]} " =~ " ${command} " ]]; then
-    echo -e "${RED}Error: Unknown command: $command${NC}"
+    log_error "Unknown command: $command"
     echo ""
     show_usage
     exit 1

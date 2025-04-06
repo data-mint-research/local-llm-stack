@@ -1,0 +1,447 @@
+# LOCAL-LLM-Stack System Schema
+# This schema defines the structure for all system documentation
+
+# Schema for component documentation
+component_schema:
+  type: object
+  required:
+    - components
+  properties:
+    components:
+      type: array
+      items:
+        type: object
+        required:
+          - type
+          - name
+          - purpose
+        properties:
+          type:
+            type: string
+            description: "Type of component (container, script, library, etc.)"
+            enum: ["container", "script", "library", "module"]
+          name:
+            type: string
+            description: "Name of the component"
+          purpose:
+            type: string
+            description: "Brief description of the component's purpose"
+          image:
+            type: string
+            description: "Docker image name (for container components)"
+          version_var:
+            type: string
+            description: "Environment variable that controls the version"
+          default_version:
+            type: string
+            description: "Default version if not specified"
+          ports:
+            type: array
+            items:
+              type: object
+              required:
+                - internal
+              properties:
+                internal:
+                  type: integer
+                  description: "Internal container port"
+                external_var:
+                  type: string
+                  description: "Environment variable that controls the external port"
+                default_external:
+                  type: integer
+                  description: "Default external port if not specified"
+                protocol:
+                  type: string
+                  description: "Protocol (tcp, udp)"
+                  enum: ["tcp", "udp"]
+                purpose:
+                  type: string
+                  description: "Purpose of this port"
+          volumes:
+            type: array
+            items:
+              type: object
+              required:
+                - host_path
+                - container_path
+              properties:
+                host_path:
+                  type: string
+                  description: "Path on the host"
+                container_path:
+                  type: string
+                  description: "Path in the container"
+                purpose:
+                  type: string
+                  description: "Purpose of this volume"
+          environment_variables:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - value
+              properties:
+                name:
+                  type: string
+                  description: "Name of the environment variable"
+                value:
+                  type: string
+                  description: "Value of the environment variable"
+                purpose:
+                  type: string
+                  description: "Purpose of this environment variable"
+          resource_limits:
+            type: object
+            properties:
+              cpu_var:
+                type: string
+                description: "Environment variable that controls the CPU limit"
+              cpu_default:
+                type: number
+                description: "Default CPU limit if not specified"
+              memory_var:
+                type: string
+                description: "Environment variable that controls the memory limit"
+              memory_default:
+                type: string
+                description: "Default memory limit if not specified"
+          health_check:
+            type: object
+            properties:
+              command:
+                type: string
+                description: "Health check command"
+              interval:
+                type: string
+                description: "Interval between health checks"
+              timeout:
+                type: string
+                description: "Timeout for health checks"
+              retries:
+                type: integer
+                description: "Number of retries before considering unhealthy"
+              start_period:
+                type: string
+                description: "Grace period before starting health checks"
+
+# Schema for relationship documentation
+relationship_schema:
+  type: object
+  required:
+    - relationships
+  properties:
+    relationships:
+      type: array
+      items:
+        type: object
+        required:
+          - source
+          - target
+          - type
+          - description
+        properties:
+          source:
+            type: string
+            description: "Source component name"
+          target:
+            type: string
+            description: "Target component name"
+          type:
+            type: string
+            description: "Type of relationship"
+            enum: ["depends_on", "provides_service_to", "startup_dependency", "runtime_dependency", "configuration_dependency"]
+          description:
+            type: string
+            description: "Description of the relationship"
+          interface:
+            type: string
+            description: "Interface used for the relationship"
+          required:
+            type: boolean
+            description: "Whether this relationship is required"
+          condition:
+            type: string
+            description: "Condition for the relationship (e.g., 'mongodb_healthy')"
+
+# Schema for interface documentation
+interface_schema:
+  type: object
+  properties:
+    api_interfaces:
+      type: array
+      items:
+        type: object
+        required:
+          - component
+          - interface_type
+          - base_url
+          - endpoints
+        properties:
+          component:
+            type: string
+            description: "Component name"
+          interface_type:
+            type: string
+            description: "Type of interface"
+            enum: ["http_api", "grpc", "websocket", "cli"]
+          base_url:
+            type: string
+            description: "Base URL for the API"
+          endpoints:
+            type: array
+            items:
+              type: object
+              required:
+                - path
+                - method
+                - description
+              properties:
+                path:
+                  type: string
+                  description: "Endpoint path"
+                method:
+                  type: string
+                  description: "HTTP method"
+                  enum: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+                description:
+                  type: string
+                  description: "Description of the endpoint"
+                request_format:
+                  type: object
+                  properties:
+                    content_type:
+                      type: string
+                      description: "Content type of the request"
+                    parameters:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - name
+                          - type
+                        properties:
+                          name:
+                            type: string
+                            description: "Parameter name"
+                          type:
+                            type: string
+                            description: "Parameter type"
+                            enum: ["string", "integer", "boolean", "array", "object"]
+                          required:
+                            type: boolean
+                            description: "Whether this parameter is required"
+                          description:
+                            type: string
+                            description: "Description of the parameter"
+                response_format:
+                  type: object
+                  properties:
+                    content_type:
+                      type: string
+                      description: "Content type of the response"
+                    fields:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - name
+                          - type
+                        properties:
+                          name:
+                            type: string
+                            description: "Field name"
+                          type:
+                            type: string
+                            description: "Field type"
+                            enum: ["string", "integer", "boolean", "array", "object"]
+                          description:
+                            type: string
+                            description: "Description of the field"
+    cli_interfaces:
+      type: array
+      items:
+        type: object
+        required:
+          - component
+          - commands
+        properties:
+          component:
+            type: string
+            description: "Component name"
+          commands:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+              properties:
+                name:
+                  type: string
+                  description: "Command name"
+                description:
+                  type: string
+                  description: "Description of the command"
+                function:
+                  type: string
+                  description: "Function that implements the command"
+                parameters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                    properties:
+                      name:
+                        type: string
+                        description: "Parameter name"
+                      type:
+                        type: string
+                        description: "Parameter type"
+                        enum: ["string", "integer", "boolean", "array", "object"]
+                      required:
+                        type: boolean
+                        description: "Whether this parameter is required"
+                      description:
+                        type: string
+                        description: "Description of the parameter"
+                subcommands:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                      - description
+                    properties:
+                      name:
+                        type: string
+                        description: "Subcommand name"
+                      description:
+                        type: string
+                        description: "Description of the subcommand"
+                      function:
+                        type: string
+                        description: "Function that implements the subcommand"
+                      parameters:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - name
+                          properties:
+                            name:
+                              type: string
+                              description: "Parameter name"
+                            type:
+                              type: string
+                              description: "Parameter type"
+                              enum: ["string", "integer", "boolean", "array", "object"]
+                            required:
+                              type: boolean
+                              description: "Whether this parameter is required"
+                            description:
+                              type: string
+                              description: "Description of the parameter"
+    shell_functions:
+      type: array
+      items:
+        type: object
+        required:
+          - file
+          - functions
+        properties:
+          file:
+            type: string
+            description: "File path"
+          functions:
+            type: array
+            items:
+              type: object
+              required:
+                - name
+                - description
+              properties:
+                name:
+                  type: string
+                  description: "Function name"
+                description:
+                  type: string
+                  description: "Description of the function"
+                parameters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - name
+                    properties:
+                      name:
+                        type: string
+                        description: "Parameter name"
+                      type:
+                        type: string
+                        description: "Parameter type"
+                        enum: ["string", "integer", "boolean", "array", "object"]
+                      required:
+                        type: boolean
+                        description: "Whether this parameter is required"
+                      description:
+                        type: string
+                        description: "Description of the parameter"
+                returns:
+                  type: string
+                  description: "Return value description"
+
+# Schema for data flow documentation
+data_flow_schema:
+  type: object
+  required:
+    - data_flows
+  properties:
+    data_flows:
+      type: array
+      items:
+        type: object
+        required:
+          - name
+          - description
+          - steps
+        properties:
+          name:
+            type: string
+            description: "Name of the data flow"
+          description:
+            type: string
+            description: "Description of the data flow"
+          steps:
+            type: array
+            items:
+              type: object
+              required:
+                - step
+                - source
+                - target
+                - data
+              properties:
+                step:
+                  type: integer
+                  description: "Step number"
+                source:
+                  type: string
+                  description: "Source component"
+                target:
+                  type: string
+                  description: "Target component"
+                data:
+                  type: string
+                  description: "Data being transferred"
+                format:
+                  type: string
+                  description: "Data format"
+                transport:
+                  type: string
+                  description: "Transport mechanism"
+                endpoint:
+                  type: string
+                  description: "Endpoint used (if applicable)"

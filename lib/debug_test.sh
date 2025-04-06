@@ -1,16 +1,18 @@
 #!/bin/bash
 # debug_test.sh - A simple script to test VSCode debugging
+# This file has been refactored to use the new core library
 
-# Source common functions
+# Source core library modules
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/common.sh"
+source "$SCRIPT_DIR/core/logging.sh"
+source "$SCRIPT_DIR/core/error.sh"
 
 # Function to demonstrate debugging
 debug_demo() {
   local name=$1
   local count=$2
   
-  echo -e "${BLUE}Starting debug demo...${NC}"
+  log_info "Starting debug demo..."
   
   # Variables to inspect
   local array=("one" "two" "three" "four" "five")
@@ -19,11 +21,11 @@ debug_demo() {
   
   # Loop to set breakpoints
   for ((i=1; i<=count; i++)); do
-    echo -e "${GREEN}Step $i of $count${NC}"
+    log_success "Step $i of $count"
     
     # Conditional logic for debugging
     if [ $i -gt 3 ]; then
-      echo -e "${YELLOW}More than halfway through!${NC}"
+      log_warn "More than halfway through!"
     fi
     
     # Modify array for watching changes
@@ -34,9 +36,9 @@ debug_demo() {
   done
   
   # Final output
-  echo -e "${GREEN}Debug demo completed!${NC}"
-  echo -e "${BLUE}Final array: ${array[*]}${NC}"
-  echo -e "${BLUE}Message: $string${NC}"
+  log_success "Debug demo completed!"
+  log_info "Final array: ${array[*]}"
+  log_info "Message: $string"
   
   return 0
 }
@@ -46,17 +48,17 @@ main() {
   local name=${1:-"World"}
   local count=${2:-5}
   
-  echo -e "${BLUE}Debug Test Script${NC}"
-  echo -e "${BLUE}==================${NC}"
+  log_info "Debug Test Script"
+  log_info "=================="
   
   # Call the debug demo function
   debug_demo "$name" "$count"
   
   # Check the return value
   if [ $? -eq 0 ]; then
-    echo -e "${GREEN}Script executed successfully!${NC}"
+    log_success "Script executed successfully!"
   else
-    echo -e "${RED}Script execution failed!${NC}"
+    log_error "Script execution failed!"
   fi
 }
 

@@ -1,0 +1,74 @@
+graph TD
+    %% Component nodes
+    Ollama[Ollama\nLLM Inference]
+    LibreChat[LibreChat\nWeb Interface]
+    MongoDB[MongoDB\nDatabase]
+    Meilisearch[Meilisearch\nSearch Engine]
+    LLM[llm\nCLI Script]
+    ConfigLib[config.sh\nConfiguration Library]
+    LoggingLib[logging.sh\nLogging Library]
+    ErrorLib[error.sh\nError Library]
+    SystemLib[system.sh\nSystem Library]
+    ValidationLib[validation.sh\nValidation Library]
+    CommonLib[common.sh\nCommon Library]
+    Network[llm-stack-network\nDocker Network]
+    ConfigFile[config/.env\nConfiguration File]
+    LibreChatConfig[librechat.yaml\nLibreChat Config]
+
+    %% Component Dependencies
+    LibreChat -->|depends on| Ollama
+    LibreChat -->|depends on| MongoDB
+    LibreChat -->|depends on| Meilisearch
+    
+    %% Service Provision
+    Ollama -.->|provides service to| LibreChat
+    MongoDB -.->|provides service to| LibreChat
+    Meilisearch -.->|provides service to| LibreChat
+    
+    %% Startup Dependencies
+    LibreChat -->|starts after| Ollama
+    LibreChat -->|starts after| MongoDB
+    LibreChat -->|starts after| Meilisearch
+    
+    %% Runtime Dependencies
+    LLM -->|requires| Docker[Docker]
+    LLM -->|requires| DockerCompose[Docker Compose]
+    
+    %% Configuration Dependencies
+    LibreChat -->|configured by| ConfigFile
+    LibreChat -->|configured by| LibreChatConfig
+    Ollama -->|configured by| ConfigFile
+    MongoDB -->|configured by| ConfigFile
+    Meilisearch -->|configured by| ConfigFile
+    
+    %% Library Dependencies
+    LLM -->|uses| LoggingLib
+    LLM -->|uses| ErrorLib
+    LLM -->|uses| ConfigLib
+    LLM -->|uses| CommonLib
+    
+    ConfigLib -->|uses| LoggingLib
+    ConfigLib -->|uses| ErrorLib
+    ConfigLib -->|uses| SystemLib
+    ConfigLib -->|uses| ValidationLib
+    
+    %% Network Dependencies
+    Ollama -->|connected to| Network
+    MongoDB -->|connected to| Network
+    Meilisearch -->|connected to| Network
+    LibreChat -->|connected to| Network
+    
+    %% Styling
+    classDef container fill:#b3e0ff,stroke:#0066cc,stroke-width:2px
+    classDef script fill:#ffe6cc,stroke:#ff9933,stroke-width:2px
+    classDef library fill:#d9f2d9,stroke:#339933,stroke-width:2px
+    classDef network fill:#e6ccff,stroke:#6600cc,stroke-width:2px
+    classDef config fill:#ffcccc,stroke:#cc0000,stroke-width:2px
+    classDef external fill:#f2f2f2,stroke:#666666,stroke-width:2px
+    
+    class Ollama,LibreChat,MongoDB,Meilisearch container
+    class LLM script
+    class ConfigLib,LoggingLib,ErrorLib,SystemLib,ValidationLib,CommonLib library
+    class Network network
+    class ConfigFile,LibreChatConfig config
+    class Docker,DockerCompose external

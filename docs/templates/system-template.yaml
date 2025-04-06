@@ -1,0 +1,122 @@
+# LOCAL-LLM-Stack System Documentation Template
+# Use this template to create system documentation files
+
+# Component Documentation Template
+# Save to: /docs/system/components.yaml
+components:
+  - type: "container"  # container, script, library, module
+    name: "component_name"
+    purpose: "Brief description of the component's purpose"
+    image: "image/name"  # For container components
+    version_var: "VERSION_ENV_VAR"
+    default_version: "default_version"
+    ports:
+      - internal: 1234  # Internal container port
+        external_var: "HOST_PORT_ENV_VAR"
+        default_external: 5678
+        protocol: "tcp"  # tcp, udp
+        purpose: "Purpose of this port"
+    volumes:
+      - host_path: "/host/path"
+        container_path: "/container/path"
+        purpose: "Purpose of this volume"
+    environment_variables:
+      - name: "ENV_VAR_NAME"
+        value: "env_var_value"
+        purpose: "Purpose of this environment variable"
+    resource_limits:
+      cpu_var: "CPU_LIMIT_ENV_VAR"
+      cpu_default: 0.5
+      memory_var: "MEMORY_LIMIT_ENV_VAR"
+      memory_default: "1G"
+    health_check:
+      command: "health check command"
+      interval: "30s"
+      timeout: "10s"
+      retries: 3
+      start_period: "40s"
+
+# Relationship Documentation Template
+# Save to: /docs/system/relationships.yaml
+relationships:
+  - source: "source_component"
+    target: "target_component"
+    type: "depends_on"  # depends_on, provides_service_to, startup_dependency, runtime_dependency, configuration_dependency
+    description: "Description of the relationship"
+    interface: "interface_used"  # Optional
+    required: true  # Optional
+    condition: "condition_name"  # Optional, for startup_dependency
+
+# Interface Documentation Template
+# Save to: /docs/system/interfaces.yaml
+# API Interfaces
+api_interfaces:
+  - component: "component_name"
+    interface_type: "http_api"  # http_api, grpc, websocket, cli
+    base_url: "http://base.url"
+    endpoints:
+      - path: "/api/endpoint"
+        method: "POST"  # GET, POST, PUT, DELETE, PATCH
+        description: "Description of the endpoint"
+        request_format:
+          content_type: "application/json"
+          parameters:
+            - name: "param_name"
+              type: "string"  # string, integer, boolean, array, object
+              required: true
+              description: "Description of the parameter"
+        response_format:
+          content_type: "application/json"
+          fields:
+            - name: "field_name"
+              type: "string"  # string, integer, boolean, array, object
+              description: "Description of the field"
+
+# CLI Interfaces
+cli_interfaces:
+  - component: "component_name"
+    commands:
+      - name: "command_name"
+        description: "Description of the command"
+        function: "function_name"
+        parameters:
+          - name: "param_name"
+            type: "string"  # string, integer, boolean, array, object
+            required: true
+            description: "Description of the parameter"
+        subcommands:
+          - name: "subcommand_name"
+            description: "Description of the subcommand"
+            function: "function_name"
+            parameters:
+              - name: "param_name"
+                type: "string"  # string, integer, boolean, array, object
+                required: true
+                description: "Description of the parameter"
+
+# Shell Functions
+shell_functions:
+  - file: "path/to/file.sh"
+    functions:
+      - name: "function_name"
+        description: "Description of the function"
+        parameters:
+          - name: "param_name"
+            type: "string"  # string, integer, boolean, array, object
+            required: true
+            description: "Description of the parameter"
+        returns: "Description of the return value"
+
+# Data Flow Documentation Template
+# Save to: /docs/system/interfaces.yaml (data_flows section)
+data_flows:
+  - name: "data_flow_name"
+    description: "Description of the data flow"
+    steps:
+      - step: 1
+        source: "source_component"
+        target: "target_component"
+        data: "data_description"
+        format: "data_format"
+        transport: "transport_mechanism"
+        endpoint: "/api/endpoint"  # Optional
