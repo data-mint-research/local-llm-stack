@@ -1,12 +1,64 @@
 # LOCAL-LLM-Stack System Schema
 # This schema defines the structure for all system documentation
 
+# Schema for documentation metadata
+metadata_schema:
+  type: object
+  required:
+    - version
+    - last_updated
+    - author
+  properties:
+    version:
+      type: string
+      description: "Version of the documentation"
+    last_updated:
+      type: string
+      format: date
+      description: "Date when the documentation was last updated (YYYY-MM-DD)"
+    author:
+      type: string
+      description: "Author of the documentation"
+    status:
+      type: string
+      description: "Status of the documentation"
+      enum: ["draft", "review", "approved", "deprecated"]
+    tags:
+      type: array
+      items:
+        type: string
+      description: "Tags for categorizing the documentation"
+    related_docs:
+      type: array
+      items:
+        type: object
+        required:
+          - path
+          - relationship
+        properties:
+          path:
+            type: string
+            description: "Path to the related document"
+          title:
+            type: string
+            description: "Title of the related document"
+          relationship:
+            type: string
+            description: "Relationship to the current document"
+            enum: ["parent", "child", "related", "extends", "implements", "depends_on"]
+          description:
+            type: string
+            description: "Description of how the documents are related"
+
 # Schema for component documentation
 component_schema:
   type: object
   required:
+    - metadata
     - components
   properties:
+    metadata:
+      $ref: "#/metadata_schema"
     components:
       type: array
       items:
@@ -19,13 +71,16 @@ component_schema:
           type:
             type: string
             description: "Type of component (container, script, library, etc.)"
-            enum: ["container", "script", "library", "module"]
+            enum: ["container", "script", "library", "module", "service", "utility"]
           name:
             type: string
             description: "Name of the component"
           purpose:
             type: string
             description: "Brief description of the component's purpose"
+          description:
+            type: string
+            description: "Detailed description of the component"
           image:
             type: string
             description: "Docker image name (for container components)"
@@ -92,6 +147,12 @@ component_schema:
                 purpose:
                   type: string
                   description: "Purpose of this environment variable"
+                required:
+                  type: boolean
+                  description: "Whether this environment variable is required"
+                sensitive:
+                  type: boolean
+                  description: "Whether this environment variable contains sensitive information"
           resource_limits:
             type: object
             properties:
@@ -125,13 +186,52 @@ component_schema:
               start_period:
                 type: string
                 description: "Grace period before starting health checks"
+          diagrams:
+            type: array
+            items:
+              type: object
+              required:
+                - path
+                - type
+              properties:
+                path:
+                  type: string
+                  description: "Path to the diagram file"
+                type:
+                  type: string
+                  description: "Type of diagram"
+                  enum: ["architecture", "data_flow", "sequence", "class", "entity_relationship", "state"]
+                description:
+                  type: string
+                  description: "Description of what the diagram shows"
+          dependencies:
+            type: array
+            items:
+              type: string
+            description: "List of components this component depends on"
+          documentation:
+            type: array
+            items:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: "Path to additional documentation"
+                description:
+                  type: string
+                  description: "Description of the documentation"
 
 # Schema for relationship documentation
 relationship_schema:
   type: object
   required:
+    - metadata
     - relationships
   properties:
+    metadata:
+      $ref: "#/metadata_schema"
     relationships:
       type: array
       items:
@@ -151,7 +251,7 @@ relationship_schema:
           type:
             type: string
             description: "Type of relationship"
-            enum: ["depends_on", "provides_service_to", "startup_dependency", "runtime_dependency", "configuration_dependency"]
+            enum: ["depends_on", "provides_service_to", "startup_dependency", "runtime_dependency", "configuration_dependency", "extends", "implements", "uses"]
           description:
             type: string
             description: "Description of the relationship"
@@ -164,11 +264,28 @@ relationship_schema:
           condition:
             type: string
             description: "Condition for the relationship (e.g., 'mongodb_healthy')"
+          diagrams:
+            type: array
+            items:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: "Path to the diagram file"
+                description:
+                  type: string
+                  description: "Description of what the diagram shows"
 
 # Schema for interface documentation
 interface_schema:
   type: object
+  required:
+    - metadata
   properties:
+    metadata:
+      $ref: "#/metadata_schema"
     api_interfaces:
       type: array
       items:
@@ -185,10 +302,27 @@ interface_schema:
           interface_type:
             type: string
             description: "Type of interface"
-            enum: ["http_api", "grpc", "websocket", "cli"]
+            enum: ["http_api", "grpc", "websocket", "cli", "rest", "graphql"]
           base_url:
             type: string
             description: "Base URL for the API"
+          version:
+            type: string
+            description: "API version"
+          authentication:
+            type: object
+            properties:
+              type:
+                type: string
+                description: "Authentication type"
+                enum: ["none", "basic", "bearer", "oauth2", "api_key"]
+              location:
+                type: string
+                description: "Where authentication is applied"
+                enum: ["header", "query", "cookie"]
+              parameter_name:
+                type: string
+                description: "Name of the authentication parameter"
           endpoints:
             type: array
             items:
@@ -204,7 +338,7 @@ interface_schema:
                 method:
                   type: string
                   description: "HTTP method"
-                  enum: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+                  enum: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"]
                 description:
                   type: string
                   description: "Description of the endpoint"
@@ -228,19 +362,37 @@ interface_schema:
                           type:
                             type: string
                             description: "Parameter type"
-                            enum: ["string", "integer", "boolean", "array", "object"]
+                            enum: ["string", "integer", "number", "boolean", "array", "object", "null"]
                           required:
                             type: boolean
                             description: "Whether this parameter is required"
                           description:
                             type: string
                             description: "Description of the parameter"
+                          default:
+                            description: "Default value for the parameter"
+                          example:
+                            description: "Example value for the parameter"
                 response_format:
                   type: object
                   properties:
                     content_type:
                       type: string
                       description: "Content type of the response"
+                    status_codes:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - code
+                          - description
+                        properties:
+                          code:
+                            type: string
+                            description: "HTTP status code"
+                          description:
+                            type: string
+                            description: "Description of the status code"
                     fields:
                       type: array
                       items:
@@ -255,10 +407,42 @@ interface_schema:
                           type:
                             type: string
                             description: "Field type"
-                            enum: ["string", "integer", "boolean", "array", "object"]
+                            enum: ["string", "integer", "number", "boolean", "array", "object", "null"]
                           description:
                             type: string
                             description: "Description of the field"
+                          example:
+                            description: "Example value for the field"
+                examples:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - request
+                      - response
+                    properties:
+                      request:
+                        type: string
+                        description: "Example request"
+                      response:
+                        type: string
+                        description: "Example response"
+                      description:
+                        type: string
+                        description: "Description of the example"
+          diagrams:
+            type: array
+            items:
+              type: object
+              required:
+                - path
+              properties:
+                path:
+                  type: string
+                  description: "Path to the diagram file"
+                description:
+                  type: string
+                  description: "Description of what the diagram shows"
     cli_interfaces:
       type: array
       items:
@@ -307,6 +491,8 @@ interface_schema:
                       description:
                         type: string
                         description: "Description of the parameter"
+                      default:
+                        description: "Default value for the parameter"
                 subcommands:
                   type: array
                   items:
@@ -344,6 +530,25 @@ interface_schema:
                             description:
                               type: string
                               description: "Description of the parameter"
+                            default:
+                              description: "Default value for the parameter"
+                examples:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - command
+                      - description
+                    properties:
+                      command:
+                        type: string
+                        description: "Example command"
+                      output:
+                        type: string
+                        description: "Example output"
+                      description:
+                        type: string
+                        description: "Description of the example"
     shell_functions:
       type: array
       items:
@@ -389,16 +594,38 @@ interface_schema:
                       description:
                         type: string
                         description: "Description of the parameter"
+                      default:
+                        description: "Default value for the parameter"
                 returns:
                   type: string
                   description: "Return value description"
+                examples:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - code
+                      - description
+                    properties:
+                      code:
+                        type: string
+                        description: "Example code"
+                      output:
+                        type: string
+                        description: "Example output"
+                      description:
+                        type: string
+                        description: "Description of the example"
 
 # Schema for data flow documentation
 data_flow_schema:
   type: object
   required:
+    - metadata
     - data_flows
   properties:
+    metadata:
+      $ref: "#/metadata_schema"
     data_flows:
       type: array
       items:
@@ -414,6 +641,9 @@ data_flow_schema:
           description:
             type: string
             description: "Description of the data flow"
+          diagram:
+            type: string
+            description: "Path to the diagram file"
           steps:
             type: array
             items:
@@ -445,3 +675,67 @@ data_flow_schema:
                 endpoint:
                   type: string
                   description: "Endpoint used (if applicable)"
+                description:
+                  type: string
+                  description: "Detailed description of this step"
+
+# Schema for diagram documentation
+diagram_schema:
+  type: object
+  required:
+    - metadata
+    - diagrams
+  properties:
+    metadata:
+      $ref: "#/metadata_schema"
+    diagrams:
+      type: array
+      items:
+        type: object
+        required:
+          - name
+          - path
+          - type
+          - description
+        properties:
+          name:
+            type: string
+            description: "Name of the diagram"
+          path:
+            type: string
+            description: "Path to the diagram file"
+          type:
+            type: string
+            description: "Type of diagram"
+            enum: ["architecture", "data_flow", "sequence", "class", "entity_relationship", "state", "component", "deployment"]
+          description:
+            type: string
+            description: "Description of what the diagram shows"
+          source:
+            type: string
+            description: "Source code for the diagram (e.g., Mermaid syntax)"
+          components:
+            type: array
+            items:
+              type: string
+            description: "List of components shown in the diagram"
+          relationships:
+            type: array
+            items:
+              type: object
+              required:
+                - source
+                - target
+              properties:
+                source:
+                  type: string
+                  description: "Source component"
+                target:
+                  type: string
+                  description: "Target component"
+                type:
+                  type: string
+                  description: "Type of relationship"
+                description:
+                  type: string
+                  description: "Description of the relationship"

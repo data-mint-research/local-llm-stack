@@ -1,0 +1,75 @@
+# tools/template/config/config.yaml
+# Configuration template for tools
+
+# Tool settings
+tool:
+  # Tool name
+  name: "template"
+  
+  # Tool version
+  version: "1.0.0"
+  
+  # Tool description
+  description: "A template tool for the LOCAL-LLM-Stack"
+  
+  # Tool author
+  author: "MINT-RESEARCH"
+  
+  # Tool license
+  license: "MIT"
+
+# Processing settings
+processing:
+  # Maximum number of files to process
+  max_files: 100
+  
+  # File patterns to include
+  include_patterns:
+    - "*.sh"
+    - "*.yaml"
+    - "*.yml"
+  
+  # File patterns to exclude
+  exclude_patterns:
+    - "*/test/*"
+    - "*/tmp/*"
+    - "*/backup/*"
+  
+  # Processing options
+  options:
+    # Whether to create backups before processing
+    create_backups: true
+    
+    # Whether to process files recursively
+    recursive: true
+    
+    # Maximum depth for recursive processing
+    max_depth: 10
+
+# Output settings
+output:
+  # Output format (text, json, yaml)
+  format: "text"
+  
+  # Output file (leave empty for stdout)
+  file: ""
+  
+  # Whether to overwrite existing output file
+  overwrite: false
+  
+  # Verbosity level (0-3)
+  verbosity: 1
+
+# Advanced settings
+advanced:
+  # Timeout in seconds (0 for no timeout)
+  timeout: 300
+  
+  # Maximum memory usage in MB (0 for no limit)
+  max_memory: 0
+  
+  # Number of parallel processes (0 for auto)
+  parallel_processes: 0
+  
+  # Whether to continue on errors
+  continue_on_error: false

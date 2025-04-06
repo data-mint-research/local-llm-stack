@@ -1,72 +1,97 @@
-# Git Hooks for Documentation Synchronization
+# Documentation Git Hooks
 
-This directory contains Git hooks for automatically updating the AI-optimized documentation when code changes are committed.
+This directory contains Git hooks for automating documentation validation and extraction in the LOCAL-LLM-Stack project.
 
-## Hooks
+## Overview
+
+These Git hooks help ensure that documentation stays in sync with code changes by:
+
+1. **Validating documentation** before committing changes
+2. **Extracting documentation** from code after committing changes
+3. **Prompting developers** to update documentation when code changes
+
+## Available Hooks
 
 ### pre-commit
 
-This hook automatically updates documentation when code changes are committed.
+The pre-commit hook runs before a commit is completed and performs the following checks:
 
-The hook performs the following operations:
-- Checks if any relevant files have changed (shell scripts, Docker Compose files)
-- If relevant files have changed, runs the extract-docs.sh script
-- Adds the updated documentation files to the commit
+- Validates documentation files against the schema
+- Checks for consistency in documentation
+- Prompts the developer to update documentation when code changes
+
+### post-commit
+
+The post-commit hook runs after a commit is completed and performs the following actions:
+
+- Extracts documentation from changed code files
+- Updates machine-readable documentation files
+- Notifies the developer of documentation changes that need to be committed
 
 ## Installation
 
-To install the hooks, you need to create symbolic links from the `.git/hooks` directory to the hooks in this directory.
+To install the Git hooks, run the installation script:
 
 ```bash
-# Navigate to the project root directory
-cd /path/to/local-llm-stack
+# Make the script executable
+chmod +x tools/doc-sync/git-hooks/install-hooks.sh
 
-# Create a symbolic link to the pre-commit hook
-ln -sf ../../tools/doc-sync/git-hooks/pre-commit .git/hooks/pre-commit
-
-# Make the hook executable
-chmod +x .git/hooks/pre-commit
+# Run the installation script
+./tools/doc-sync/git-hooks/install-hooks.sh
 ```
 
-## How It Works
+This will install the hooks in your local `.git/hooks` directory.
 
-The pre-commit hook is triggered automatically when you run `git commit`. It runs before the commit is created, allowing it to modify the files that will be included in the commit.
+## Usage
 
-The hook:
-1. Gets the list of files that are staged for commit
-2. Checks if any of those files are shell scripts or Docker Compose files
-3. If relevant files have changed, runs the extract-docs.sh script to update the documentation
-4. Adds the updated documentation files to the commit
+Once installed, the hooks will run automatically during the Git workflow:
 
-This ensures that the documentation is always in sync with the code.
+- **pre-commit** runs when you execute `git commit`
+- **post-commit** runs after a commit is completed
+
+### Bypassing Hooks
+
+In some cases, you may need to bypass the hooks. You can do this using the `--no-verify` flag:
+
+```bash
+git commit --no-verify -m "Commit message"
+```
+
+**Note**: Bypassing hooks should be done only in exceptional cases, as it may lead to documentation becoming out of sync with code.
 
 ## Troubleshooting
 
-If the hook fails, the commit will be aborted. You'll need to fix the issues and try again.
+### Hook Not Running
 
-Common issues include:
-- Missing dependencies (yq)
-- Permission issues
-- Syntax errors in the documentation
+If a hook is not running, check the following:
 
-If you need to bypass the hook for a specific commit, you can use the `--no-verify` option:
+1. Ensure the hook is installed in `.git/hooks/`
+2. Ensure the hook file is executable (`chmod +x .git/hooks/hook-name`)
+3. Check for any error messages in the hook output
 
-```bash
-git commit --no-verify
-```
+### Documentation Validation Errors
 
-However, this should be used sparingly, as it defeats the purpose of the hook.
+If you encounter documentation validation errors:
 
-## Manual Updates
+1. Check the error message for details
+2. Verify that the documentation follows the schema
+3. Ensure all required fields are present
+4. Check for syntax errors
 
-If you prefer not to use the Git hooks, you can manually update the documentation:
+### Documentation Extraction Errors
 
-```bash
-# Update the documentation
-./tools/doc-sync/extract-docs.sh
+If you encounter documentation extraction errors:
 
-# Validate the documentation
-./tools/doc-sync/validate-docs.sh
+1. Check the error message for details
+2. Verify that the code follows the expected format
+3. Check for syntax errors in the code
+4. Manually update the documentation if needed
 
-# Add the updated documentation files to the commit
-git add docs/system/components.yaml docs/system/relationships.yaml docs/system/interfaces.yaml
+## Customization
+
+You can customize the hooks by editing the files in this directory. After making changes, you'll need to reinstall the hooks using the installation script.
+
+## Related Documentation
+
+- [Documentation Style Guide](../../../docs/documentation-style-guide.md)
+- [Maintaining Documentation](../../../docs/maintaining-documentation.md)

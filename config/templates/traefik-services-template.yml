@@ -1,0 +1,118 @@
+# Traefik Dynamic Services Configuration Template
+# This file serves as a reference for all possible Traefik dynamic services configuration options
+# Copy this file to modules/security/config/traefik/dynamic/services.yml and modify as needed
+
+http:
+  routers:
+    # LibreChat router configuration
+    librechat:
+      rule: "Host(`librechat.local`)"  # Host rule for the router
+      service: librechat                # Service to route to
+      entryPoints:                      # Entry points to use
+        - web
+        - websecure
+      # TLS configuration
+      tls: {}                           # Enable TLS
+      middlewares:                      # Middlewares to apply
+        - securityHeaders
+        - librechat-ratelimit
+
+    # Ollama API router configuration
+    ollama:
+      rule: "Host(`ollama.local`)"      # Host rule for the router
+      service: ollama                   # Service to route to
+      entryPoints:                      # Entry points to use
+        - web
+        - websecure
+      # TLS configuration
+      tls: {}                           # Enable TLS
+      middlewares:                      # Middlewares to apply
+        - securityHeaders
+        - ollama-auth
+        - ollama-ratelimit
+
+    # Traefik dashboard router (secured with basic auth)
+    traefik-dashboard:
+      rule: "Host(`traefik.local`)"     # Host rule for the router
+      service: api@internal             # Service to route to
+      entryPoints:                      # Entry points to use
+        - web
+        - websecure
+      # TLS configuration
+      tls: {}                           # Enable TLS
+      middlewares:                      # Middlewares to apply
+        - traefik-auth
+        - securityHeaders
+
+  services:
+    # LibreChat service configuration
+    librechat:
+      loadBalancer:
+        servers:
+          - url: "http://librechat:3080" # URL for the server
+        passHostHeader: true            # Whether to pass the host header
+        responseForwarding:
+          flushInterval: "100ms"        # Flush interval for response forwarding
+
+    # Ollama service configuration
+    ollama:
+      loadBalancer:
+        servers:
+          - url: "http://ollama:11434"  # URL for the server
+        passHostHeader: true            # Whether to pass the host header
+        responseForwarding:
+          flushInterval: "100ms"        # Flush interval for response forwarding
+
+  middlewares:
+    # Security headers for all services
+    securityHeaders:
+      headers:
+        frameDeny: true                 # Whether to deny framing
+        sslRedirect: true               # Whether to redirect to SSL
+        browserXssFilter: true          # Whether to enable XSS filtering
+        contentTypeNosniff: true        # Whether to enable content type nosniff
+        stsIncludeSubdomains: true      # Whether to include subdomains in STS
+        stsPreload: true                # Whether to preload STS
+        stsSeconds: 31536000            # STS seconds (1 year)
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'"
+        referrerPolicy: "strict-origin-when-cross-origin" # Referrer policy
+        permissionsPolicy: "camera=(), microphone=(), geolocation=(), interest-cohort=()" # Permissions policy
+
+    # Rate limiting for LibreChat
+    librechat-ratelimit:
+      rateLimit:
+        average: 100                    # Average requests per period
+        burst: 50                       # Burst requests
+        period: 1m                      # Period for rate limiting
+
+    # Rate limiting for Ollama API
+    ollama-ratelimit:
+      rateLimit:
+        average: 100                    # Average requests per period
+        burst: 50                       # Burst requests
+        period: 1m                      # Period for rate limiting
+
+    # Basic auth for Ollama API
+    # DO NOT EDIT THIS DIRECTLY - Use generate_secrets.sh to generate secure values
+    ollama-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/" # Will be replaced with secure value
+        removeHeader: false             # Whether to remove the Authorization header
+
+    # Basic auth for Traefik dashboard
+    # DO NOT EDIT THIS DIRECTLY - Use generate_secrets.sh to generate secure values
+    traefik-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/" # Will be replaced with secure value
+        removeHeader: false             # Whether to remove the Authorization header
+
+    # IP whitelist middleware (optional)
+    ip-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"              # Localhost
+          - "10.0.0.0/8"                # Private network
+          - "172.16.0.0/12"             # Private network
+          - "192.168.0.0/16"            # Private network

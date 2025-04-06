@@ -1,0 +1,64 @@
+%% LOCAL-LLM-Stack Deployment Architecture
+%% This diagram shows the deployment architecture of the LOCAL-LLM-Stack system
+%% Created: 2025-04-06
+%% Author: Roo
+
+flowchart TD
+    %% Define the host system
+    Host[Host System\nDocker Environment]
+    
+    %% Define the Docker containers
+    subgraph "Docker Containers"
+        Ollama[Ollama Container\nLLM Inference]
+        LibreChat[LibreChat Container\nWeb Interface]
+        MongoDB[MongoDB Container\nDatabase]
+        Meilisearch[Meilisearch Container\nSearch Engine]
+    end
+    
+    %% Define the volumes
+    subgraph "Persistent Volumes"
+        OllamaVol[(Ollama Volume\n/data/ollama)]
+        ModelsVol[(Models Volume\n/data/models)]
+        MongoVol[(MongoDB Volume\n/data/mongodb)]
+        MeiliVol[(Meilisearch Volume\n/data/meilisearch)]
+        LibreChatVol[(LibreChat Volume\n/data/librechat)]
+    end
+    
+    %% Define the network connections
+    subgraph "Network"
+        DockerNetwork{Docker Network\nlocal-llm-stack}
+    end
+    
+    %% Define the relationships
+    Host -->|Runs| Ollama
+    Host -->|Runs| LibreChat
+    Host -->|Runs| MongoDB
+    Host -->|Runs| Meilisearch
+    
+    Ollama -->|Connected to| DockerNetwork
+    LibreChat -->|Connected to| DockerNetwork
+    MongoDB -->|Connected to| DockerNetwork
+    Meilisearch -->|Connected to| DockerNetwork
+    
+    Ollama -->|Stores data in| OllamaVol
+    Ollama -->|Stores models in| ModelsVol
+    MongoDB -->|Stores data in| MongoVol
+    Meilisearch -->|Stores data in| MeiliVol
+    LibreChat -->|Stores data in| LibreChatVol
+    
+    %% Define the ports
+    Host -->|Port 3080| LibreChat
+    Host -->|Port 11434| Ollama
+    Host -->|Port 7700| Meilisearch
+    
+    %% Style definitions
+    classDef host fill:#f5f5f5,stroke:#333,stroke-width:2px
+    classDef container fill:#d1e7dd,stroke:#0d6efd,stroke-width:2px
+    classDef volume fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+    classDef network fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    
+    %% Apply styles
+    class Host host
+    class Ollama,LibreChat,MongoDB,Meilisearch container
+    class OllamaVol,ModelsVol,MongoVol,MeiliVol,LibreChatVol volume
+    class DockerNetwork network

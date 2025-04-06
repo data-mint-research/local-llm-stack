@@ -1,0 +1,84 @@
+# ShellCheck configuration for LOCAL-LLM-Stack
+# This file configures ShellCheck to enforce the project's shell script style guide
+
+# Specify shell dialect
+shell=bash
+
+# Enable all checks by default
+enable=all
+
+# Disable specific checks that don't align with our style guide
+disable=SC2034  # Allow unused variables (some may be used in sourced scripts)
+disable=SC2155  # Allow declaring and assigning variables in the same line
+disable=SC1090  # Allow sourcing non-constant paths (we use SCRIPT_DIR)
+disable=SC1091  # Allow sourcing files that can't be checked
+
+# Specify external sources
+source-path=lib/core
+source-path=lib
+
+# Require double quotes for all variable expansions
+require-variable-braces=true
+
+# Warn about using deprecated syntax
+warn-deprecated=true
+
+# Warn about using non-POSIX features
+warn-non-posix=true
+
+# Warn about using non-portable features
+warn-non-portable=true
+
+# Warn about using obsolete syntax
+warn-obsolete=true
+
+# Warn about using unquoted variables
+warn-unquoted=true
+
+# Warn about using unassigned variables
+warn-unassigned=true
+
+# Warn about using undefined variables
+warn-undefined=true
+
+# Warn about using unused variables
+warn-unused=true
+
+# Warn about using unset variables
+warn-unset=true
+
+# Warn about using unreachable code
+warn-unreachable=true
+
+# Warn about using unsupported features
+warn-unsupported=true
+
+# Warn about using unportable code
+warn-unportable=true
+
+# Warn about using unreadable code
+warn-unreadable=true
+
+# Warn about using unnecessary code
+warn-unnecessary=true
+
+# Warn about using undesirable code
+warn-undesirable=true
+
+# Warn about using unsafe code
+warn-unsafe=true
+
+# Warn about using unstable code
+warn-unstable=true
+
+# Warn about using untested code
+warn-untested=true
+
+# Warn about using unverified code
+warn-unverified=true
+
+# Warn about using unvalidated code
+warn-unvalidated=true
+
+# Warn about using unverifiable code
+warn-unverifiable=true

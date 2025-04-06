@@ -1,0 +1,154 @@
+%% LOCAL-LLM-Stack Diagram Template
+%% Use this template to create consistent diagrams for the project
+%% Replace the placeholders with actual content
+%% Delete any sections that are not applicable
+
+%% Diagram Title: [Replace with your diagram title]
+%% Author: [Your Name]
+%% Date: [Creation Date]
+%% Description: [Brief description of what this diagram shows]
+
+%% Choose one of the diagram types below and delete the others
+
+%% ========== FLOWCHART DIAGRAM ==========
+%% Use for showing process flows, component relationships, or decision trees
+%% Direction options: TD (top-down), LR (left-right), RL (right-left), BT (bottom-top)
+
+flowchart TD
+    %% Define nodes with descriptive IDs and labels
+    A[Component A] --> B[Component B]
+    A --> C[Component C]
+    B --> D[Component D]
+    C --> D
+    
+    %% Add styling to nodes (optional)
+    classDef container fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef service fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    
+    %% Apply styles to nodes
+    class A,B container
+    class C,D service
+    
+    %% Add a title (optional)
+    subgraph "System Components"
+    A
+    B
+    C
+    D
+    end
+
+%% ========== SEQUENCE DIAGRAM ==========
+%% Use for showing interactions between components over time
+
+sequenceDiagram
+    %% Define participants with descriptive names
+    participant User
+    participant LibreChat
+    participant Ollama
+    
+    %% Define interactions with clear messages
+    User->>LibreChat: Send prompt
+    LibreChat->>Ollama: Forward prompt
+    Ollama->>Ollama: Process with LLM
+    Ollama->>LibreChat: Return response
+    LibreChat->>User: Display response
+    
+    %% Add notes for clarification (optional)
+    Note over LibreChat,Ollama: API communication
+
+%% ========== ENTITY RELATIONSHIP DIAGRAM ==========
+%% Use for showing data relationships
+
+erDiagram
+    %% Define entities and their relationships
+    USER {
+        string id
+        string username
+        string email
+    }
+    
+    CONVERSATION {
+        string id
+        string title
+        date created_at
+    }
+    
+    MESSAGE {
+        string id
+        string content
+        string role
+    }
+    
+    %% Define relationships with cardinality
+    USER ||--o{ CONVERSATION : "creates"
+    CONVERSATION ||--o{ MESSAGE : "contains"
+
+%% ========== GANTT CHART ==========
+%% Use for project timelines
+
+gantt
+    title Project Timeline
+    dateFormat  YYYY-MM-DD
+    
+    section Phase 1
+    Task 1           :a1, 2025-01-01, 7d
+    Task 2           :a2, after a1, 5d
+    
+    section Phase 2
+    Task 3           :a3, after a2, 10d
+    Task 4           :a4, after a3, 3d
+
+%% ========== CLASS DIAGRAM ==========
+%% Use for showing code structure
+
+classDiagram
+    %% Define classes and their relationships
+    class Component {
+        +String name
+        +String type
+        +start()
+        +stop()
+    }
+    
+    class Service {
+        +String endpoint
+        +connect()
+        +disconnect()
+    }
+    
+    %% Define inheritance and relationships
+    Component <|-- Service
+    Service <|-- ApiService
+
+%% ========== STATE DIAGRAM ==========
+%% Use for showing state transitions
+
+stateDiagram-v2
+    %% Define states and transitions
+    [*] --> Stopped
+    Stopped --> Starting: start command
+    Starting --> Running: initialization complete
+    Running --> Stopping: stop command
+    Stopping --> Stopped: shutdown complete
+    Stopping --> Failed: error during shutdown
+    Failed --> Stopped: manual intervention
+    
+    %% Add notes for clarification (optional)
+    note right of Failed: Requires manual restart
+
+%% ========== PIE CHART ==========
+%% Use for showing distribution
+
+pie
+    title Resource Allocation
+    "Component A" : 40
+    "Component B" : 30
+    "Component C" : 20
+    "Component D" : 10
+
+%% ========== DIAGRAM NOTES ==========
+%% Add any additional notes or explanations about the diagram here
+%% - What does this diagram show?
+%% - What are the key components or interactions?
+%% - Are there any important details to understand?
+%% - How does this relate to other diagrams or documentation?

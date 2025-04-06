@@ -13,6 +13,8 @@ echo "Sourcing error.sh from: $SCRIPT_DIR/lib/core/error.sh"
 source "$SCRIPT_DIR/lib/core/error.sh"
 echo "Sourcing config.sh from: $SCRIPT_DIR/lib/core/config.sh"
 source "$SCRIPT_DIR/lib/core/config.sh"
+source "$SCRIPT_DIR/lib/core/module_integration.sh"
+source "$SCRIPT_DIR/lib/core/tool_integration.sh"
 
 # Source common functions
 echo "Sourcing common.sh from: $SCRIPT_DIR/lib/common.sh"

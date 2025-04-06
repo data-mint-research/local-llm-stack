@@ -20,7 +20,7 @@ entryPoints:
 api:
   dashboard: true
   # Set to insecure mode for testing
-  insecure: true
+  insecure: false
 
 # Docker provider configuration
 providers:
@@ -36,7 +36,7 @@ providers:
 certificatesResolvers:
   default:
     acme:
-      email: "admin@example.com"
+      email: "admin@local.host"
       storage: "/etc/traefik/acme.json"
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
       httpChallenge:

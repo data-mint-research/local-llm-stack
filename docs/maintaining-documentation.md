@@ -1,193 +1,191 @@
-# Maintaining AI-Optimized Documentation
+# Maintaining Documentation
 
-This guide explains how to keep the AI-optimized documentation in sync with code changes in the LOCAL-LLM-Stack project.
+This guide outlines the process for maintaining documentation in the LOCAL-LLM-Stack project. Following these guidelines ensures that documentation remains accurate, up-to-date, and consistent with the codebase.
 
-## Overview
+## Table of Contents
 
-The LOCAL-LLM-Stack project uses a machine-readable documentation system that is optimized for AI agent comprehension. This documentation is stored in YAML files in the `docs/system/` directory and follows a specific schema defined in `docs/schema/system-schema.yaml`.
-
-The documentation is used to generate a knowledge graph that can be used by AI agents to understand the system architecture, components, relationships, interfaces, and data flows.
+1. [Documentation Structure](#documentation-structure)
+2. [Documentation Update Process](#documentation-update-process)
+3. [Using Documentation Tools](#using-documentation-tools)
+4. [Documentation Standards](#documentation-standards)
+5. [Git Hooks for Documentation](#git-hooks-for-documentation)
+6. [Validation and Testing](#validation-and-testing)
+7. [Troubleshooting](#troubleshooting)
 
 ## Documentation Structure
 
-The documentation is organized into the following files:
+The LOCAL-LLM-Stack documentation is organized as follows:
 
-- `docs/system/components.yaml`: Documents all system components (containers, scripts, libraries, modules)
-- `docs/system/relationships.yaml`: Documents relationships between components (dependencies, service provision, etc.)
-- `docs/system/interfaces.yaml`: Documents interfaces (APIs, CLI commands, shell functions) and data flows
+```
+docs/
+├── README.md                     # Overview of documentation
+├── *.md                          # General documentation files
+├── documentation-style-guide.md  # Documentation style guide
+├── diagrams/                     # Diagram files
+│   ├── *.mmd                     # Mermaid diagram source files
+│   └── *.png                     # Rendered diagram images
+├── schema/                       # Schema definitions
+│   └── *.yaml                    # YAML schema files
+├── system/                       # Machine-readable system documentation
+│   ├── components.yaml           # Component documentation
+│   ├── relationships.yaml        # Relationship documentation
+│   └── interfaces.yaml           # Interface documentation
+└── templates/                    # Documentation templates
+    ├── *.md                      # Markdown templates
+    └── *.yaml                    # YAML templates
+```
 
-## Automated Documentation Updates
+## Documentation Update Process
 
-The system includes tools to automatically extract and update documentation from the codebase:
+### When to Update Documentation
 
-1. `tools/doc-sync/extract-docs.sh`: Extracts documentation from shell scripts and Docker Compose files
-2. `tools/doc-sync/validate-docs.sh`: Validates the documentation against the schema
-3. Git hooks in `tools/doc-sync/git-hooks/` that run automatically when code changes
+Documentation should be updated in the following scenarios:
 
-### Setting Up Git Hooks
+1. **Code Changes**: When making changes to code, update the corresponding documentation.
+2. **New Features**: When adding new features, create or update documentation to reflect the changes.
+3. **Bug Fixes**: When fixing bugs that affect behavior described in documentation, update the documentation.
+4. **Configuration Changes**: When changing configuration options, update the documentation.
+5. **Architectural Changes**: When changing the system architecture, update diagrams and related documentation.
 
-To enable automatic documentation updates when code changes, you need to set up the Git hooks:
+### Documentation Update Workflow
+
+Follow this workflow when updating documentation:
+
+1. **Identify Documentation to Update**: Determine which documentation files need to be updated based on your code changes.
+2. **Extract Documentation**: Use the documentation extraction tools to automatically update machine-readable documentation.
+3. **Validate Documentation**: Use the validation tools to ensure the documentation is valid and consistent.
+4. **Update Human-Readable Documentation**: Update any human-readable documentation (Markdown files) as needed.
+5. **Update Diagrams**: Update diagrams to reflect any architectural changes.
+6. **Review Documentation**: Review the documentation changes to ensure accuracy and completeness.
+7. **Commit Documentation**: Commit the documentation changes along with the code changes.
+
+## Using Documentation Tools
+
+### Documentation Extraction
+
+The documentation extraction tool automatically extracts information from code and updates the machine-readable documentation.
 
 ```bash
-# Navigate to the project root directory
-cd /path/to/local-llm-stack
+# Extract documentation from all sources
+./tools/doc-sync/extract-docs.sh
 
-# Create a symbolic link to the pre-commit hook
-ln -sf ../../tools/doc-sync/git-hooks/pre-commit .git/hooks/pre-commit
-
-# Make the hook executable
-chmod +x .git/hooks/pre-commit
+# Extract documentation from a specific file
+./tools/doc-sync/extract-docs.sh --file path/to/file.sh
 ```
 
-Once the hook is set up, it will automatically update the documentation when you commit changes to shell scripts or Docker Compose files.
+### Documentation Validation
 
-## Manual Documentation Updates
-
-For changes that cannot be automatically detected or extracted, you'll need to update the documentation manually:
-
-### Updating Component Documentation
-
-To add or update a component in `docs/system/components.yaml`:
-
-```yaml
-components:
-  - type: "container"  # container, script, library, module
-    name: "component_name"
-    purpose: "Brief description of the component's purpose"
-    # Add other component properties as needed
-```
-
-### Updating Relationship Documentation
-
-To add or update a relationship in `docs/system/relationships.yaml`:
-
-```yaml
-relationships:
-  - source: "source_component"
-    target: "target_component"
-    type: "depends_on"  # depends_on, provides_service_to, startup_dependency, runtime_dependency, configuration_dependency
-    description: "Description of the relationship"
-    # Add other relationship properties as needed
-```
-
-### Updating Interface Documentation
-
-To add or update an interface in `docs/system/interfaces.yaml`:
-
-```yaml
-# API Interfaces
-api_interfaces:
-  - component: "component_name"
-    interface_type: "http_api"  # http_api, grpc, websocket, cli
-    base_url: "http://base.url"
-    endpoints:
-      - path: "/api/endpoint"
-        method: "POST"  # GET, POST, PUT, DELETE, PATCH
-        description: "Description of the endpoint"
-        # Add request and response formats as needed
-
-# CLI Interfaces
-cli_interfaces:
-  - component: "component_name"
-    commands:
-      - name: "command_name"
-        description: "Description of the command"
-        function: "function_name"
-        # Add parameters and subcommands as needed
-
-# Shell Functions
-shell_functions:
-  - file: "path/to/file.sh"
-    functions:
-      - name: "function_name"
-        description: "Description of the function"
-        # Add parameters and return value as needed
-
-# Data Flows
-data_flows:
-  - name: "data_flow_name"
-    description: "Description of the data flow"
-    steps:
-      - step: 1
-        source: "source_component"
-        target: "target_component"
-        data: "data_description"
-        # Add format, transport, and endpoint as needed
-```
-
-## Validating Documentation
-
-After making manual changes to the documentation, you should validate it to ensure it follows the schema:
+The documentation validation tool ensures that documentation follows the defined schema and standards.
 
 ```bash
-# Navigate to the project root directory
-cd /path/to/local-llm-stack
-
-# Run the validation script
+# Validate all documentation
 ./tools/doc-sync/validate-docs.sh
+
+# Validate with warnings only (don't fail on warnings)
+./tools/doc-sync/validate-docs.sh --warning-only
 ```
 
-The validation script will check that:
-- All YAML files conform to the schema
-- All required fields are present
-- All references between files are valid
+## Documentation Standards
 
-## Generating the Knowledge Graph
+All documentation should follow the standards defined in the [Documentation Style Guide](documentation-style-guide.md). Key points include:
 
-To generate or update the knowledge graph from the documentation:
+- Use consistent formatting and structure
+- Follow naming conventions
+- Use clear, concise language
+- Include examples where appropriate
+- Keep documentation up-to-date with code
+
+### Machine-Readable Documentation
+
+Machine-readable documentation (YAML files) should:
+
+- Follow the schema defined in `docs/schema/system-schema.yaml`
+- Include all required fields
+- Use consistent terminology
+- Include metadata (version, last updated, author)
+- Include cross-references to related documentation
+
+### Human-Readable Documentation
+
+Human-readable documentation (Markdown files) should:
+
+- Follow the structure defined in the templates
+- Use consistent formatting (headers, lists, code blocks)
+- Include examples and diagrams where appropriate
+- Use consistent terminology
+- Include links to related documentation
+
+## Git Hooks for Documentation
+
+Git hooks automate documentation validation and updates. To install the git hooks:
 
 ```bash
-# Navigate to the project root directory
-cd /path/to/local-llm-stack
-
-# Run the knowledge graph generation script
-./tools/knowledge-graph/generate-graph.sh
+# Install git hooks
+./tools/doc-sync/git-hooks/install-hooks.sh
 ```
 
-This will create a JSON-LD knowledge graph in `docs/knowledge-graph/graph.json` that can be used by AI agents to understand the system.
+The following git hooks are available:
 
-## Best Practices
+- **pre-commit**: Validates documentation before committing
+- **post-commit**: Extracts documentation after committing
+- **pre-push**: Ensures documentation is up-to-date before pushing
 
-1. **Keep Documentation Up-to-Date**: Update the documentation whenever you make changes to the code. The Git hooks will help with this, but you should also manually update the documentation for changes that cannot be automatically detected.
+## Validation and Testing
 
-2. **Follow the Schema**: Make sure your documentation follows the schema defined in `docs/schema/system-schema.yaml`. The validation script will help with this.
+### Documentation Validation
 
-3. **Be Descriptive**: Provide clear, concise descriptions for components, relationships, interfaces, and data flows. This will help AI agents understand the system better.
+Documentation validation checks for:
 
-4. **Use Consistent Terminology**: Use consistent terminology throughout the documentation. This will help AI agents make connections between different parts of the system.
+- Valid YAML syntax
+- Compliance with the schema
+- Required fields
+- Consistent terminology
+- Valid cross-references
 
-5. **Document Relationships**: Make sure to document all relationships between components. This is crucial for AI agents to understand how the system works.
+### Documentation Testing
 
-6. **Document Interfaces**: Document all interfaces (APIs, CLI commands, shell functions) that components expose. This will help AI agents understand how to interact with the system.
+Documentation testing checks for:
 
-7. **Document Data Flows**: Document how data flows through the system. This will help AI agents understand the system's behavior.
+- Broken links
+- Missing files
+- Inconsistent terminology
+- Outdated information
 
 ## Troubleshooting
 
-### Documentation Validation Fails
+### Common Issues
 
-If the documentation validation fails, check the error messages for details on what's wrong. Common issues include:
+#### Validation Errors
 
-- Missing required fields
-- Invalid field values
-- Invalid references between files
+If you encounter validation errors:
 
-### Git Hook Fails
+1. Check the error message for details
+2. Verify that the documentation follows the schema
+3. Ensure all required fields are present
+4. Check for syntax errors
 
-If the Git hook fails to update the documentation, check the error messages for details. Common issues include:
+#### Extraction Errors
 
-- Missing dependencies (yq, jq)
-- Permission issues
-- Syntax errors in the documentation
+If you encounter extraction errors:
 
-### Knowledge Graph Generation Fails
+1. Check the error message for details
+2. Verify that the code follows the expected format
+3. Check for syntax errors in the code
+4. Manually update the documentation if needed
 
-If the knowledge graph generation fails, check the error messages for details. Common issues include:
+#### Git Hook Errors
 
-- Missing dependencies (yq, jq)
-- Invalid documentation
-- Permission issues
+If you encounter git hook errors:
 
-## Conclusion
+1. Check the error message for details
+2. Run the validation or extraction tools manually to debug
+3. Fix any issues in the documentation or code
+4. Try the git operation again
 
-By following this guide, you'll help keep the AI-optimized documentation in sync with code changes, making it easier for AI agents to understand and work with the LOCAL-LLM-Stack project.
+### Getting Help
+
+If you need help with documentation:
+
+1. Check the [Documentation Style Guide](documentation-style-guide.md)
+2. Review the templates in `docs/templates/`
+3. Ask for help from the team

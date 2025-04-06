@@ -1,12 +1,29 @@
 # LOCAL-LLM-Stack System Documentation Template
 # Use this template to create system documentation files
 
+# Metadata Template
+# Include this at the top of each documentation file
+metadata:
+  version: "1.0.0"
+  last_updated: "YYYY-MM-DD"  # Replace with actual date
+  author: "Your Name"
+  status: "draft"  # draft, review, approved, deprecated
+  tags:
+    - "tag1"
+    - "tag2"
+  related_docs:
+    - path: "path/to/related/doc.md"
+      title: "Related Document Title"
+      relationship: "related"  # parent, child, related, extends, implements, depends_on
+      description: "How this document relates to the current one"
+
 # Component Documentation Template
 # Save to: /docs/system/components.yaml
 components:
-  - type: "container"  # container, script, library, module
+  - type: "container"  # container, script, library, module, service, utility
     name: "component_name"
     purpose: "Brief description of the component's purpose"
+    description: "Detailed description of the component and its functionality"
     image: "image/name"  # For container components
     version_var: "VERSION_ENV_VAR"
     default_version: "default_version"
@@ -24,6 +41,8 @@ components:
       - name: "ENV_VAR_NAME"
         value: "env_var_value"
         purpose: "Purpose of this environment variable"
+        required: true  # Whether this environment variable is required
+        sensitive: false  # Whether this environment variable contains sensitive information
     resource_limits:
       cpu_var: "CPU_LIMIT_ENV_VAR"
       cpu_default: 0.5
@@ -35,42 +54,75 @@ components:
       timeout: "10s"
       retries: 3
       start_period: "40s"
+    diagrams:
+      - path: "/docs/diagrams/component-diagram.mmd"
+        type: "architecture"  # architecture, data_flow, sequence, class, entity_relationship, state
+        description: "High-level architecture of the component"
+    dependencies:
+      - "dependency1"
+      - "dependency2"
+    documentation:
+      - path: "/docs/component-guide.md"
+        description: "User guide for the component"
 
 # Relationship Documentation Template
 # Save to: /docs/system/relationships.yaml
 relationships:
   - source: "source_component"
     target: "target_component"
-    type: "depends_on"  # depends_on, provides_service_to, startup_dependency, runtime_dependency, configuration_dependency
+    type: "depends_on"  # depends_on, provides_service_to, startup_dependency, runtime_dependency, configuration_dependency, extends, implements, uses
     description: "Description of the relationship"
     interface: "interface_used"  # Optional
     required: true  # Optional
     condition: "condition_name"  # Optional, for startup_dependency
+    diagrams:
+      - path: "/docs/diagrams/relationship-diagram.mmd"
+        description: "Diagram showing this relationship in context"
 
 # Interface Documentation Template
 # Save to: /docs/system/interfaces.yaml
 # API Interfaces
 api_interfaces:
   - component: "component_name"
-    interface_type: "http_api"  # http_api, grpc, websocket, cli
+    interface_type: "http_api"  # http_api, grpc, websocket, cli, rest, graphql
     base_url: "http://base.url"
+    version: "v1"  # API version
+    authentication:
+      type: "bearer"  # none, basic, bearer, oauth2, api_key
+      location: "header"  # header, query, cookie
+      parameter_name: "Authorization"
     endpoints:
       - path: "/api/endpoint"
-        method: "POST"  # GET, POST, PUT, DELETE, PATCH
+        method: "POST"  # GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD
         description: "Description of the endpoint"
         request_format:
           content_type: "application/json"
           parameters:
             - name: "param_name"
-              type: "string"  # string, integer, boolean, array, object
+              type: "string"  # string, integer, number, boolean, array, object, null
               required: true
               description: "Description of the parameter"
+              default: "default_value"  # Optional
+              example: "example_value"  # Optional
         response_format:
           content_type: "application/json"
+          status_codes:
+            - code: "200"
+              description: "Success"
+            - code: "400"
+              description: "Bad Request"
           fields:
             - name: "field_name"
-              type: "string"  # string, integer, boolean, array, object
+              type: "string"  # string, integer, number, boolean, array, object, null
               description: "Description of the field"
+              example: "example_value"  # Optional
+        examples:
+          - request: '{"param_name": "example_value"}'
+            response: '{"field_name": "response_value"}'
+            description: "Example of a successful request"
+    diagrams:
+      - path: "/docs/diagrams/api-diagram.mmd"
+        description: "Diagram showing the API structure"
 
 # CLI Interfaces
 cli_interfaces:
@@ -84,6 +136,7 @@ cli_interfaces:
             type: "string"  # string, integer, boolean, array, object
             required: true
             description: "Description of the parameter"
+            default: "default_value"  # Optional
         subcommands:
           - name: "subcommand_name"
             description: "Description of the subcommand"
@@ -93,6 +146,11 @@ cli_interfaces:
                 type: "string"  # string, integer, boolean, array, object
                 required: true
                 description: "Description of the parameter"
+                default: "default_value"  # Optional
+        examples:
+          - command: "command_name --param_name value"
+            output: "Example output"
+            description: "Example of using the command"
 
 # Shell Functions
 shell_functions:
@@ -105,13 +163,19 @@ shell_functions:
             type: "string"  # string, integer, boolean, array, object
             required: true
             description: "Description of the parameter"
+            default: "default_value"  # Optional
         returns: "Description of the return value"
+        examples:
+          - code: "function_name param_value"
+            output: "Example output"
+            description: "Example of using the function"
 
 # Data Flow Documentation Template
 # Save to: /docs/system/interfaces.yaml (data_flows section)
 data_flows:
   - name: "data_flow_name"
     description: "Description of the data flow"
+    diagram: "/docs/diagrams/data-flow-diagram.mmd"
     steps:
       - step: 1
         source: "source_component"
@@ -120,3 +184,40 @@ data_flows:
         format: "data_format"
         transport: "transport_mechanism"
         endpoint: "/api/endpoint"  # Optional
+        description: "Detailed description of this step"
+
+# Diagram Documentation Template
+# Save to: /docs/system/diagrams.yaml
+diagrams:
+  - name: "diagram_name"
+    path: "/docs/diagrams/diagram-name.mmd"
+    type: "architecture"  # architecture, data_flow, sequence, class, entity_relationship, state, component, deployment
+    description: "Description of what the diagram shows"
+    source: |
+      flowchart TD
+        A[Component A] --> B[Component B]
+        A --> C[Component C]
+        B --> D[Component D]
+        C --> D
+    components:
+      - "Component A"
+      - "Component B"
+      - "Component C"
+      - "Component D"
+    relationships:
+      - source: "Component A"
+        target: "Component B"
+        type: "depends_on"
+        description: "Component A depends on Component B"
+      - source: "Component A"
+        target: "Component C"
+        type: "depends_on"
+        description: "Component A depends on Component C"
+      - source: "Component B"
+        target: "Component D"
+        type: "depends_on"
+        description: "Component B depends on Component D"
+      - source: "Component C"
+        target: "Component D"
+        type: "depends_on"
+        description: "Component C depends on Component D"

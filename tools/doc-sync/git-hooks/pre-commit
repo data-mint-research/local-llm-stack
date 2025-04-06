@@ -1,11 +1,11 @@
 #!/bin/bash
-# pre-commit - Git pre-commit hook to update documentation
-# This hook automatically updates documentation when code changes
+# pre-commit hook for documentation validation
+# This hook validates documentation before committing
 
 # Get the absolute path of the script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
-DOC_SYNC_DIR="$ROOT_DIR/tools/doc-sync"
+VALIDATE_SCRIPT="$ROOT_DIR/tools/doc-sync/validate-docs.sh"
 
 # Colors for output
 RED='\033[0;31m'
@@ -13,84 +13,82 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-# Check if any relevant files have changed
-check_changed_files() {
-    # Get the list of changed files
-    local changed_files=$(git diff --cached --name-only)
-    
-    # Check if any shell scripts have changed
-    local shell_scripts_changed=false
-    for file in $changed_files; do
-        if [[ "$file" == lib/core/*.sh || "$file" == llm ]]; then
-            shell_scripts_changed=true
-            break
-        fi
-    done
-    
-    # Check if any Docker Compose files have changed
-    local docker_files_changed=false
-    for file in $changed_files; do
-        if [[ "$file" == core/*.yml || "$file" == core/*.yaml ]]; then
-            docker_files_changed=true
-            break
-        fi
-    done
-    
-    # Check if any documentation files have changed
-    local doc_files_changed=false
-    for file in $changed_files; do
-        if [[ "$file" == docs/system/*.yaml ]]; then
-            doc_files_changed=true
-            break
-        fi
-    done
-    
-    # Return true if any relevant files have changed
-    if [[ "$shell_scripts_changed" == true || "$docker_files_changed" == true ]]; then
-        return 0
-    else
-        return 1
-    fi
-}
+echo "Running documentation validation..."
 
-# Update documentation
-update_documentation() {
-    echo -e "${YELLOW}Updating documentation...${NC}"
-    
-    # Run the documentation extraction script
-    if ! "$DOC_SYNC_DIR/extract-docs.sh"; then
-        echo -e "${RED}Documentation update failed. Please fix the issues and try again.${NC}"
-        return 1
-    fi
-    
-    echo -e "${GREEN}Documentation updated successfully.${NC}"
-    
-    # Add the updated documentation files to the commit
-    git add "$ROOT_DIR/docs/system/components.yaml"
-    git add "$ROOT_DIR/docs/system/relationships.yaml"
-    git add "$ROOT_DIR/docs/system/interfaces.yaml"
-    
-    return 0
-}
+# Check if any documentation files are being committed
+DOCS_CHANGED=$(git diff --cached --name-only | grep -E '^docs/.*\.(md|yaml|yml|mmd)$')
+SCHEMA_CHANGED=$(git diff --cached --name-only | grep -E '^docs/schema/.*\.yaml$')
+CODE_CHANGED=$(git diff --cached --name-only | grep -E '\.(sh|py|js|ts|go|java|c|cpp|h|hpp)$')
 
-# Main function
-main() {
-    echo "Running pre-commit hook..."
-    
-    # Check if any relevant files have changed
-    if check_changed_files; then
-        echo "Relevant files have changed. Updating documentation..."
-        if ! update_documentation; then
-            echo -e "${RED}Pre-commit hook failed. Documentation update failed.${NC}"
-            exit 1
-        fi
-    else
-        echo "No relevant files have changed. Skipping documentation update."
-    fi
-    
-    echo -e "${GREEN}Pre-commit hook completed successfully.${NC}"
+# If no documentation or code files are being committed, skip validation
+if [[ -z "$DOCS_CHANGED" && -z "$CODE_CHANGED" ]]; then
+    echo -e "${GREEN}No documentation or code files changed, skipping validation.${NC}"
     exit 0
-}
+fi
 
-# Run the main function
-main
+# If schema files are being changed, validate all documentation
+if [[ -n "$SCHEMA_CHANGED" ]]; then
+    echo -e "${YELLOW}Schema files changed, validating all documentation...${NC}"
+    "$VALIDATE_SCRIPT" --warning-only
+    VALIDATION_RESULT=$?
+    
+    if [[ $VALIDATION_RESULT -ne 0 ]]; then
+        echo -e "${RED}Documentation validation failed!${NC}"
+        echo -e "${YELLOW}You can bypass this check with git commit --no-verify, but this is not recommended.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}Documentation validation passed.${NC}"
+    exit 0
+fi
+
+# If documentation files are being changed, validate them
+if [[ -n "$DOCS_CHANGED" ]]; then
+    echo -e "${YELLOW}Documentation files changed, validating...${NC}"
+    "$VALIDATE_SCRIPT" --warning-only
+    VALIDATION_RESULT=$?
+    
+    if [[ $VALIDATION_RESULT -ne 0 ]]; then
+        echo -e "${RED}Documentation validation failed!${NC}"
+        echo -e "${YELLOW}You can bypass this check with git commit --no-verify, but this is not recommended.${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}Documentation validation passed.${NC}"
+fi
+
+# If code files are being changed, check if documentation needs to be updated
+if [[ -n "$CODE_CHANGED" ]]; then
+    echo -e "${YELLOW}Code files changed, checking if documentation needs to be updated...${NC}"
+    
+    # Check for shell script changes that might affect documentation
+    SHELL_CHANGED=$(echo "$CODE_CHANGED" | grep -E '\.sh$')
+    if [[ -n "$SHELL_CHANGED" ]]; then
+        echo -e "${YELLOW}Shell scripts changed, consider updating the following documentation:${NC}"
+        echo -e "${YELLOW}- docs/system/interfaces.yaml (for function changes)${NC}"
+        echo -e "${YELLOW}- docs/system/components.yaml (for component changes)${NC}"
+        echo -e "${YELLOW}- docs/system/relationships.yaml (for dependency changes)${NC}"
+    fi
+    
+    # Check for Docker Compose file changes
+    DOCKER_CHANGED=$(echo "$CODE_CHANGED" | grep -E 'docker-compose\.yml$')
+    if [[ -n "$DOCKER_CHANGED" ]]; then
+        echo -e "${YELLOW}Docker Compose files changed, consider updating the following documentation:${NC}"
+        echo -e "${YELLOW}- docs/system/components.yaml${NC}"
+        echo -e "${YELLOW}- docs/system/relationships.yaml${NC}"
+        echo -e "${YELLOW}- docs/diagrams/deployment-architecture.mmd${NC}"
+    fi
+    
+    # Prompt user to confirm documentation is up-to-date
+    echo -e "${YELLOW}Have you updated the documentation to reflect your code changes? (y/n)${NC}"
+    read -r response
+    
+    if [[ "$response" != "y" && "$response" != "Y" ]]; then
+        echo -e "${RED}Please update the documentation before committing.${NC}"
+        echo -e "${YELLOW}You can bypass this check with git commit --no-verify, but this is not recommended.${NC}"
+        exit 1
+    fi
+fi
+
+echo -e "${GREEN}Pre-commit checks passed.${NC}"
+exit 0

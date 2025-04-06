@@ -1,0 +1,81 @@
+#!/bin/bash
+# post-commit hook for documentation extraction
+# This hook extracts documentation after committing changes
+
+# Get the absolute path of the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ROOT_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+EXTRACT_SCRIPT="$ROOT_DIR/tools/doc-sync/extract-docs.sh"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+# Check if the extraction script exists
+if [[ ! -f "$EXTRACT_SCRIPT" ]]; then
+    echo -e "${RED}Error: Documentation extraction script not found: $EXTRACT_SCRIPT${NC}"
+    exit 0  # Don't fail the commit, just warn
+fi
+
+# Check if any code files were committed
+CODE_CHANGED=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E '\.(sh|py|js|ts|go|java|c|cpp|h|hpp)$')
+
+# If no code files were committed, skip extraction
+if [[ -z "$CODE_CHANGED" ]]; then
+    echo -e "${GREEN}No code files changed, skipping documentation extraction.${NC}"
+    exit 0
+fi
+
+echo "Running documentation extraction..."
+
+# Check for shell script changes
+SHELL_CHANGED=$(echo "$CODE_CHANGED" | grep -E '\.sh$')
+if [[ -n "$SHELL_CHANGED" ]]; then
+    echo -e "${YELLOW}Shell scripts changed, extracting documentation...${NC}"
+    
+    # Extract documentation from shell scripts
+    for file in $SHELL_CHANGED; do
+        if [[ -f "$ROOT_DIR/$file" ]]; then
+            echo -e "${YELLOW}Extracting documentation from $file...${NC}"
+            "$EXTRACT_SCRIPT" --file "$ROOT_DIR/$file" --quiet
+        fi
+    done
+fi
+
+# Check for Docker Compose file changes
+DOCKER_CHANGED=$(echo "$CODE_CHANGED" | grep -E 'docker-compose\.yml$')
+if [[ -n "$DOCKER_CHANGED" ]]; then
+    echo -e "${YELLOW}Docker Compose files changed, extracting documentation...${NC}"
+    
+    # Extract documentation from Docker Compose files
+    for file in $DOCKER_CHANGED; do
+        if [[ -f "$ROOT_DIR/$file" ]]; then
+            echo -e "${YELLOW}Extracting documentation from $file...${NC}"
+            "$EXTRACT_SCRIPT" --file "$ROOT_DIR/$file" --quiet
+        fi
+    done
+fi
+
+# Check if any documentation was updated
+DOCS_UPDATED=$(git status --porcelain | grep -E '^.M docs/.*\.(yaml|yml)$')
+if [[ -n "$DOCS_UPDATED" ]]; then
+    echo -e "${YELLOW}Documentation was updated. Please review and commit the changes:${NC}"
+    echo "$DOCS_UPDATED"
+    
+    # Ask if the user wants to automatically stage the changes
+    echo -e "${YELLOW}Do you want to automatically stage these documentation changes? (y/n)${NC}"
+    read -r response
+    
+    if [[ "$response" == "y" || "$response" == "Y" ]]; then
+        git add $(echo "$DOCS_UPDATED" | sed 's/^.M //')
+        echo -e "${GREEN}Documentation changes staged. You can include them in your next commit.${NC}"
+    else
+        echo -e "${YELLOW}Documentation changes not staged. You can manually review and stage them.${NC}"
+    fi
+else
+    echo -e "${GREEN}No documentation updates needed.${NC}"
+fi
+
+exit 0

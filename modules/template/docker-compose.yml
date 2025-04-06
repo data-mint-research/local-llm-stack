@@ -1,0 +1,59 @@
+# modules/template/docker-compose.yml
+# Template for module Docker Compose configuration
+version: "3.8"
+
+# All modules should use the shared network
+networks:
+  llm-stack-network:
+    external: true
+
+# Define module services
+services:
+  # Example service - replace with your actual services
+  example-service:
+    # Use environment variables for version with defaults
+    image: example/service:${EXAMPLE_SERVICE_VERSION:-latest}
+    container_name: example-service
+    
+    # Standard restart policy
+    restart: unless-stopped
+    
+    # Network configuration
+    networks:
+      - llm-stack-network
+    
+    # Port configuration with environment variables and defaults
+    ports:
+      - "${HOST_PORT_EXAMPLE:-8080}:8080"
+    
+    # Volume configuration
+    volumes:
+      - ./config:/etc/example-service/config
+      - ../../data/example-service:/var/lib/example-service
+    
+    # Environment variables
+    environment:
+      - EXAMPLE_VAR_1=${EXAMPLE_VAR_1:-default_value}
+      - EXAMPLE_VAR_2=${EXAMPLE_VAR_2:-}
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: "${EXAMPLE_SERVICE_CPU_LIMIT:-0.5}"
+          memory: "${EXAMPLE_SERVICE_MEMORY_LIMIT:-512M}"
+    
+    # Standard health check pattern
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Dependencies (if needed)
+    # depends_on:
+    #   other-service:
+    #     condition: service_healthy
+
+  # Add more services as needed

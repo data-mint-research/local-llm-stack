@@ -1,4 +1,5 @@
 # core/docker-compose.yml
+# This file includes both standard and debug configurations
 version: "3.8"
 
 networks:
@@ -78,6 +79,8 @@ services:
   librechat:
     image: librechat/librechat:${LIBRECHAT_VERSION:-latest}
     container_name: librechat
+    # Command for debugging (from docker-compose.debug.yml)
+    command: ${DEBUG_MODE:-false} == "true" && ["npm", "run", "backend:dev", "--", "--inspect=0.0.0.0:9229"] || []
     volumes:
       - ../data/librechat:/app/data
       - ../config/librechat/librechat.yaml:/app/librechat.yaml
@@ -106,8 +109,14 @@ services:
       - CRYPT_SECRET=${CRYPT_SECRET:-}
       - CREDS_KEY=${CREDS_KEY:-}
       - CREDS_IV=${CREDS_IV:-}
+      # Debug environment variables (from docker-compose.debug.yml)
+      - NODE_ENV=${DEBUG_MODE:-false} == "true" && "development" || "production"
+      - DEBUG=${DEBUG_MODE:-false} == "true" && "librechat:*" || ""
+      - VITE_API_HOST=${DEBUG_MODE:-false} == "true" && "http://localhost:${HOST_PORT_LIBRECHAT:-3080}" || ""
     ports:
       - "${HOST_PORT_LIBRECHAT:-3080}:3080"
+      # Debug port (from docker-compose.debug.yml)
+      - ${DEBUG_MODE:-false} == "true" && "9229:9229" || ""
     deploy:
       resources:
         limits:

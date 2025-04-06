@@ -127,27 +127,35 @@ Detailed documentation can be found in the `docs/` directory:
 - [Troubleshooting](docs/troubleshooting.md) - Solutions to common issues when using the LOCAL-LLM-Stack.
 - [Architecture](docs/architecture.md) - Detailed overview of the system architecture, components, and data flow.
 - [Security](docs/security.md) - Information about security aspects, authentication, and best practices.
-- [GitLab Automation](docs/gitlab-automation.md) - Instructions for automating the GitLab repository setup.
-- [Maintaining Documentation](docs/maintaining-documentation.md) - Guidelines for maintaining the AI-optimized documentation.
+- [Documentation Style Guide](docs/documentation-style-guide.md) - Standards and guidelines for documentation.
+- [Maintaining Documentation](docs/maintaining-documentation.md) - Guidelines for keeping documentation up-to-date.
 
 ### System Documentation
 
-The LOCAL-LLM-Stack includes comprehensive AI-optimized documentation:
+The LOCAL-LLM-Stack includes comprehensive machine-readable documentation:
 
-- **Machine-Readable Schema**: Structured documentation schema in `docs/schema/`
-- **System Components**: Detailed component documentation in `docs/system/`
-- **System Relationships**: Relationship mapping between components
-- **System Interfaces**: Interface definitions for component interactions
+- **Documentation Schema**: Structured documentation schema in `docs/schema/system-schema.yaml`
+- **System Components**: Detailed component documentation in `docs/system/components.yaml`
+- **System Relationships**: Relationship mapping between components in `docs/system/relationships.yaml`
+- **System Interfaces**: Interface definitions for component interactions in `docs/system/interfaces.yaml`
 - **Documentation Templates**: Templates for creating new documentation in `docs/templates/`
 
-### Knowledge Graph
+### Visual Documentation
 
-The codebase includes a knowledge graph system for better understanding of the architecture:
+The system architecture is visualized through various diagrams:
 
-- **Entity Extraction**: Tools for extracting entities from the codebase in `tools/entity-extraction/`
-- **Relationship Mapping**: Tools for mapping relationships between entities in `tools/relationship-mapping/`
-- **Graph Visualization**: Visualizations of the system architecture in `docs/diagrams/`
-- **Automated Updates**: Git hooks and CI/CD integration for keeping the knowledge graph up-to-date
+- **Component Architecture**: High-level view of system components in `docs/diagrams/component-architecture.mmd`
+- **Deployment Architecture**: Deployment structure in `docs/diagrams/deployment-architecture.mmd`
+- **System Relationships**: Component relationships in `docs/diagrams/system-relationships.mmd`
+- **Data Flow**: Data flow between components in `docs/diagrams/system-data-flow.mmd`
+
+### Documentation Tools
+
+The LOCAL-LLM-Stack includes tools for maintaining documentation:
+
+- **Documentation Extraction**: Tools for extracting documentation from code in `tools/doc-sync/extract-docs.sh`
+- **Documentation Validation**: Tools for validating documentation in `tools/doc-sync/validate-docs.sh`
+- **Git Hooks**: Automated documentation checks in `tools/doc-sync/git-hooks/`
 
 ## Data Directories
 
@@ -175,6 +183,15 @@ The LOCAL-LLM-Stack includes a structured shell script library for better mainta
 ## Contributing
 
 Contributions are welcome! Please create a fork of the repository and submit a pull request.
+
+Before contributing, please:
+
+1. Read the [Documentation Style Guide](docs/documentation-style-guide.md)
+2. Install the Git hooks for documentation validation:
+   ```bash
+   ./tools/doc-sync/git-hooks/install-hooks.sh
+   ```
+3. Ensure all documentation is up-to-date with your code changes
 
 ## License
 

@@ -8,24 +8,25 @@ source "$SCRIPT_DIR/core/logging.sh"
 source "$SCRIPT_DIR/core/error.sh"
 source "$SCRIPT_DIR/core/system.sh"
 source "$SCRIPT_DIR/core/config.sh"
+source "$SCRIPT_DIR/core/secrets.sh"
 
 log_info "Generating secure secrets..."
 
-# Ensure the config directory exists
-ensure_directory "$CONFIG_DIR"
+# Generate all required secrets
+generate_all_secrets
 if [[ $? -ne 0 ]]; then
-  handle_error $ERR_PERMISSION_DENIED "Failed to create config directory"
+  handle_error $ERR_GENERAL "Failed to generate secrets"
 fi
 
-# Generate secure secrets
-ADMIN_PASSWORD=$(generate_random_string 16)
-GRAFANA_ADMIN_PASSWORD=$(generate_random_string 16)
-JWT_SECRET=$(generate_random_string 64)
-JWT_REFRESH_SECRET=$(generate_random_string 64)
-SESSION_SECRET=$(generate_random_string 64)
-CRYPT_SECRET=$(generate_random_string 64)
-CREDS_KEY=$(generate_hex_string 64)
-CREDS_IV=$(generate_hex_string 32)
+# Get the generated secrets for use in the .env file
+ADMIN_PASSWORD=$(get_secret "ADMIN_PASSWORD")
+GRAFANA_ADMIN_PASSWORD=$(get_secret "GRAFANA_ADMIN_PASSWORD")
+JWT_SECRET=$(get_secret "JWT_SECRET")
+JWT_REFRESH_SECRET=$(get_secret "JWT_REFRESH_SECRET")
+SESSION_SECRET=$(get_secret "SESSION_SECRET")
+CRYPT_SECRET=$(get_secret "CRYPT_SECRET")
+CREDS_KEY=$(get_secret "CREDS_KEY")
+CREDS_IV=$(get_secret "CREDS_IV")
 
 # Create backup if the file exists
 if [[ -f "$ENV_FILE" ]]; then
@@ -94,28 +95,22 @@ EOF
 if [[ $? -eq 0 ]]; then
   log_success "Secure secrets generated and saved to $ENV_FILE"
 
-  # Update LibreChat .env file if it exists
-  librechat_env="$CONFIG_DIR/librechat/.env"
-  if [[ -f "$librechat_env" ]]; then
-    log_info "Updating LibreChat environment file with new secrets..."
-
-    # Create backup of LibreChat .env file
-    LIBRECHAT_BACKUP=$(backup_file "$librechat_env")
-
-    # Update the JWT secrets in the LibreChat .env file
-    sed -i "s/^JWT_SECRET=.*/JWT_SECRET=$JWT_SECRET/" "$librechat_env"
-    sed -i "s/^JWT_REFRESH_SECRET=.*/JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET/" "$librechat_env"
-
-    log_success "LibreChat environment file updated."
+  # Update all configuration files with the new secrets
+  update_all_configs
+  if [[ $? -ne 0 ]]; then
+    handle_error $ERR_GENERAL "Failed to update configuration files with secrets"
   fi
 
-  log_warn "IMPORTANT: Keep these secrets safe!"
+  log_success "All configuration files updated with the new secrets."
+
+  log_warn "IMPORTANT: Keep your secrets safe! They are stored in $SECRETS_FILE"
   log_warn "LibreChat Admin password: $ADMIN_PASSWORD"
   log_warn "Grafana Admin password: $GRAFANA_ADMIN_PASSWORD"
   if [[ "$BACKUP_FILE" != "No backup needed" && "$BACKUP_FILE" != "No backup created" ]]; then
     log_warn "If you need to restore the original configuration, use:"
     log_warn "cp $BACKUP_FILE $ENV_FILE"
   fi
+  log_info "To view your admin password, run: grep ADMIN_PASSWORD $SECRETS_FILE"
 else
   handle_error $ERR_CONFIG_ERROR "Failed to write configuration file"
 fi

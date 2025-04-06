@@ -1,0 +1,100 @@
+# Traefik Configuration Template
+# This file serves as a reference for all possible Traefik configuration options
+# Copy this file to modules/security/config/traefik/traefik.yml and modify as needed
+
+# Global settings
+global:
+  checkNewVersion: false               # Whether to check for new versions
+  sendAnonymousUsage: false            # Whether to send anonymous usage data
+
+# Entry points configuration
+# These settings control the available entry points for Traefik
+entryPoints:
+  web:
+    address: ":80"                     # Address for the web entry point
+    # HTTP to HTTPS redirect
+    http:
+      redirections:
+        entryPoint:
+          to: websecure                # Redirect to websecure entry point
+          scheme: https                # Use HTTPS scheme
+          permanent: true              # Use permanent redirect
+  
+  websecure:
+    address: ":443"                    # Address for the websecure entry point
+    # TLS configuration
+    http:
+      tls: {}                          # Enable TLS
+  
+  metrics:
+    address: ":8082"                   # Address for the metrics entry point
+
+# API and dashboard configuration
+api:
+  dashboard: true                      # Whether to enable the dashboard
+  insecure: false                      # MUST be false for security
+
+# Providers configuration
+# These settings control how Traefik discovers services
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock" # Docker endpoint
+    exposedByDefault: false            # Whether to expose containers by default
+    network: llm-stack-network         # Docker network
+  
+  file:
+    directory: "/etc/traefik/dynamic"  # Directory for file provider
+    watch: true                        # Whether to watch for changes
+
+# Certificate resolvers for HTTPS
+certificatesResolvers:
+  default:
+    acme:
+      email: "admin@local.host"        # Email for ACME (use a real email)
+      storage: "/etc/traefik/acme.json" # Storage for ACME
+      caServer: "https://acme-v02.api.letsencrypt.org/directory" # CA server for ACME
+      httpChallenge:
+        entryPoint: web                # Entry point for HTTP challenge
+
+# TLS options
+tls:
+  options:
+    modern:
+      minVersion: VersionTLS12         # Minimum TLS version
+      cipherSuites:                    # Cipher suites
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      curvePreferences:                # Curve preferences
+        - CurveP521
+        - CurveP384
+        - CurveP256
+      sniStrict: true                  # Whether to enable SNI strict mode
+
+# Log configuration
+log:
+  level: "INFO"                        # Log level (DEBUG, INFO, WARN, ERROR, FATAL)
+  format: json                         # Log format
+
+# Access log configuration
+accessLog:
+  filePath: "/var/log/traefik/access.log" # File path for access logs
+  bufferingSize: 100                   # Buffering size for access logs
+  format: json                         # Access log format
+  fields:
+    headers:
+      names:
+        User-Agent: keep               # Keep User-Agent header
+        Authorization: drop            # Drop Authorization header
+        Content-Type: keep             # Keep Content-Type header
+
+# Metrics configuration
+metrics:
+  prometheus:
+    entryPoint: metrics                # Entry point for Prometheus metrics
+    addEntryPointsLabels: true         # Whether to add entry point labels
+    addServicesLabels: true            # Whether to add service labels
+    manualRouting: true                # Whether to enable manual routing

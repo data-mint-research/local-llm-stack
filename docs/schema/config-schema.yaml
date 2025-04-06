@@ -1,0 +1,405 @@
+# LOCAL-LLM-Stack Configuration Schema
+# This schema defines the structure for all configuration files
+
+# Schema for environment variables
+env_schema:
+  type: object
+  properties:
+    # Component Versions
+    OLLAMA_VERSION:
+      type: string
+      description: "Version of Ollama to use"
+    MONGODB_VERSION:
+      type: string
+      description: "Version of MongoDB to use"
+    MEILISEARCH_VERSION:
+      type: string
+      description: "Version of Meilisearch to use"
+    LIBRECHAT_VERSION:
+      type: string
+      description: "Version of LibreChat to use"
+    TRAEFIK_VERSION:
+      type: string
+      description: "Version of Traefik to use"
+    NGINX_VERSION:
+      type: string
+      description: "Version of Nginx to use"
+    PROMETHEUS_VERSION:
+      type: string
+      description: "Version of Prometheus to use"
+    GRAFANA_VERSION:
+      type: string
+      description: "Version of Grafana to use"
+    
+    # Port Configuration
+    HOST_PORT_OLLAMA:
+      type: integer
+      description: "Host port for Ollama"
+      minimum: 1024
+      maximum: 65535
+    HOST_PORT_LIBRECHAT:
+      type: integer
+      description: "Host port for LibreChat"
+      minimum: 1024
+      maximum: 65535
+    HOST_PORT_LOAD_BALANCER:
+      type: integer
+      description: "Host port for load balancer"
+      minimum: 1024
+      maximum: 65535
+    HOST_PORT_PROMETHEUS:
+      type: integer
+      description: "Host port for Prometheus"
+      minimum: 1024
+      maximum: 65535
+    HOST_PORT_GRAFANA:
+      type: integer
+      description: "Host port for Grafana"
+      minimum: 1024
+      maximum: 65535
+    
+    # Resource Limits
+    OLLAMA_CPU_LIMIT:
+      type: number
+      description: "CPU limit for Ollama"
+      minimum: 0.1
+      maximum: 1.0
+    OLLAMA_MEMORY_LIMIT:
+      type: string
+      description: "Memory limit for Ollama"
+      pattern: "^[0-9]+G$"
+    MONGODB_MEMORY_LIMIT:
+      type: string
+      description: "Memory limit for MongoDB"
+      pattern: "^[0-9]+G$"
+    MEILISEARCH_MEMORY_LIMIT:
+      type: string
+      description: "Memory limit for Meilisearch"
+      pattern: "^[0-9]+G$"
+    LIBRECHAT_CPU_LIMIT:
+      type: number
+      description: "CPU limit for LibreChat"
+      minimum: 0.1
+      maximum: 1.0
+    LIBRECHAT_MEMORY_LIMIT:
+      type: string
+      description: "Memory limit for LibreChat"
+      pattern: "^[0-9]+G$"
+    
+    # Default Models
+    DEFAULT_MODELS:
+      type: string
+      description: "Comma-separated list of default models"
+    
+    # Security Settings
+    ADMIN_PASSWORD:
+      type: string
+      description: "Admin password"
+      minLength: 8
+    GRAFANA_ADMIN_USER:
+      type: string
+      description: "Grafana admin username"
+    GRAFANA_ADMIN_PASSWORD:
+      type: string
+      description: "Grafana admin password"
+      minLength: 8
+    JWT_SECRET:
+      type: string
+      description: "JWT secret"
+      minLength: 32
+    JWT_REFRESH_SECRET:
+      type: string
+      description: "JWT refresh secret"
+      minLength: 32
+    SESSION_SECRET:
+      type: string
+      description: "Session secret"
+      minLength: 32
+    CRYPT_SECRET:
+      type: string
+      description: "Encryption secret"
+      minLength: 32
+    CREDS_KEY:
+      type: string
+      description: "Credentials encryption key"
+      minLength: 32
+    CREDS_IV:
+      type: string
+      description: "Credentials encryption IV"
+      minLength: 16
+    MEILI_MASTER_KEY:
+      type: string
+      description: "Meilisearch master key"
+      minLength: 16
+    TRAEFIK_BASIC_AUTH:
+      type: string
+      description: "Traefik basic auth credentials"
+      minLength: 16
+    
+    # Authentication Settings
+    ENABLE_AUTH:
+      type: boolean
+      description: "Whether to enable authentication"
+    ALLOW_SOCIAL_LOGIN:
+      type: boolean
+      description: "Whether to allow social login"
+    ALLOW_REGISTRATION:
+      type: boolean
+      description: "Whether to allow registration"
+    ADMIN_EMAIL:
+      type: string
+      description: "Admin email address"
+      format: email
+
+# Schema for LibreChat configuration
+librechat_schema:
+  type: object
+  required:
+    - version
+    - cache
+    - endpoints
+  properties:
+    version:
+      type: string
+      description: "Configuration version"
+    cache:
+      type: boolean
+      description: "Whether to enable caching"
+    endpoints:
+      type: object
+      properties:
+        custom:
+          type: array
+          items:
+            type: object
+            required:
+              - name
+              - baseURL
+              - models
+            properties:
+              name:
+                type: string
+                description: "Endpoint name"
+              apiKey:
+                type: string
+                description: "API key for the endpoint"
+              baseURL:
+                type: string
+                description: "Base URL for the endpoint"
+              models:
+                type: object
+                properties:
+                  default:
+                    type: array
+                    items:
+                      type: string
+                    description: "Default models"
+              titleConvo:
+                type: boolean
+                description: "Whether to enable conversation titles"
+              titleModel:
+                type: string
+                description: "Model to use for generating titles"
+              summarize:
+                type: boolean
+                description: "Whether to enable summarization"
+              summaryModel:
+                type: string
+                description: "Model to use for summarization"
+              forcePrompt:
+                type: boolean
+                description: "Whether to force prompt"
+              modelDisplayLabel:
+                type: string
+                description: "Display label for the model"
+
+# Schema for Traefik configuration
+traefik_schema:
+  type: object
+  properties:
+    global:
+      type: object
+      properties:
+        checkNewVersion:
+          type: boolean
+          description: "Whether to check for new versions"
+        sendAnonymousUsage:
+          type: boolean
+          description: "Whether to send anonymous usage data"
+    entryPoints:
+      type: object
+      properties:
+        web:
+          type: object
+          properties:
+            address:
+              type: string
+              description: "Address for the web entry point"
+        websecure:
+          type: object
+          properties:
+            address:
+              type: string
+              description: "Address for the websecure entry point"
+            http:
+              type: object
+              properties:
+                tls:
+                  type: object
+                  description: "TLS configuration"
+        metrics:
+          type: object
+          properties:
+            address:
+              type: string
+              description: "Address for the metrics entry point"
+    api:
+      type: object
+      properties:
+        dashboard:
+          type: boolean
+          description: "Whether to enable the dashboard"
+        insecure:
+          type: boolean
+          description: "Whether to run in insecure mode"
+          enum: [false]
+    providers:
+      type: object
+      properties:
+        docker:
+          type: object
+          properties:
+            endpoint:
+              type: string
+              description: "Docker endpoint"
+            exposedByDefault:
+              type: boolean
+              description: "Whether to expose containers by default"
+            network:
+              type: string
+              description: "Docker network"
+        file:
+          type: object
+          properties:
+            directory:
+              type: string
+              description: "Directory for file provider"
+            watch:
+              type: boolean
+              description: "Whether to watch for changes"
+    certificatesResolvers:
+      type: object
+      properties:
+        default:
+          type: object
+          properties:
+            acme:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: "Email for ACME"
+                  format: email
+                storage:
+                  type: string
+                  description: "Storage for ACME"
+                caServer:
+                  type: string
+                  description: "CA server for ACME"
+                httpChallenge:
+                  type: object
+                  properties:
+                    entryPoint:
+                      type: string
+                      description: "Entry point for HTTP challenge"
+    tls:
+      type: object
+      properties:
+        options:
+          type: object
+          properties:
+            modern:
+              type: object
+              properties:
+                minVersion:
+                  type: string
+                  description: "Minimum TLS version"
+                cipherSuites:
+                  type: array
+                  items:
+                    type: string
+                  description: "Cipher suites"
+                curvePreferences:
+                  type: array
+                  items:
+                    type: string
+                  description: "Curve preferences"
+                sniStrict:
+                  type: boolean
+                  description: "Whether to enable SNI strict mode"
+    log:
+      type: object
+      properties:
+        level:
+          type: string
+          description: "Log level"
+          enum: ["DEBUG", "INFO", "WARN", "ERROR", "FATAL"]
+        format:
+          type: string
+          description: "Log format"
+    accessLog:
+      type: object
+      properties:
+        filePath:
+          type: string
+          description: "File path for access logs"
+        bufferingSize:
+          type: integer
+          description: "Buffering size for access logs"
+        format:
+          type: string
+          description: "Access log format"
+        fields:
+          type: object
+          properties:
+            headers:
+              type: object
+              properties:
+                names:
+                  type: object
+                  description: "Header names to include/exclude"
+    metrics:
+      type: object
+      properties:
+        prometheus:
+          type: object
+          properties:
+            entryPoint:
+              type: string
+              description: "Entry point for Prometheus metrics"
+            addEntryPointsLabels:
+              type: boolean
+              description: "Whether to add entry point labels"
+            addServicesLabels:
+              type: boolean
+              description: "Whether to add service labels"
+            manualRouting:
+              type: boolean
+              description: "Whether to enable manual routing"
+
+# Schema for Traefik dynamic configuration
+traefik_dynamic_schema:
+  type: object
+  properties:
+    http:
+      type: object
+      properties:
+        routers:
+          type: object
+          description: "Router configurations"
+        services:
+          type: object
+          description: "Service configurations"
+        middlewares:
+          type: object
+          description: "Middleware configurations"

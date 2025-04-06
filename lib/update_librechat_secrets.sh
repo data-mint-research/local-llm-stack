@@ -8,6 +8,7 @@ source "$SCRIPT_DIR/core/logging.sh"
 source "$SCRIPT_DIR/core/error.sh"
 source "$SCRIPT_DIR/core/system.sh"
 source "$SCRIPT_DIR/core/config.sh"
+source "$SCRIPT_DIR/core/secrets.sh"
 
 log_info "Checking LibreChat secrets..."
 
@@ -41,9 +42,11 @@ if [[ -z "$librechat_jwt_secret" || -z "$librechat_jwt_refresh_secret" ]]; then
   # Create backup of LibreChat .env file
   LIBRECHAT_BACKUP=$(backup_file "$librechat_env")
 
-  # Update the JWT secrets in the LibreChat .env file
-  sed -i "s|^JWT_SECRET=.*|JWT_SECRET=$jwt_secret|" "$librechat_env"
-  sed -i "s|^JWT_REFRESH_SECRET=.*|JWT_REFRESH_SECRET=$jwt_refresh_secret|" "$librechat_env"
+  # Use update_librechat_config function instead of manual sed commands
+  update_librechat_config
+  if [[ $? -ne 0 ]]; then
+    handle_error $ERR_GENERAL "Failed to update LibreChat configuration with secrets"
+  fi
 
   # Verify the update
   updated_jwt_secret=$(grep -E "^JWT_SECRET=" "$librechat_env" | cut -d= -f2)

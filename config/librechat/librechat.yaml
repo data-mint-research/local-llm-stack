@@ -8,7 +8,7 @@ cache: true
 endpoints:
   custom:
     - name: "Ollama"
-      apiKey: "dummy-api-key"
+      apiKey: "8aR7bEfgoQ2THrxgyvvcOefQQcd1C2WK"
       baseURL: "http://ollama:11434/v1/"
       models:
         default: [

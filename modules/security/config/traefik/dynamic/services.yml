@@ -89,21 +89,21 @@ http:
     ollama-auth:
       basicAuth:
         users:
-          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/"
+          - "admin:9MHCQWSADSB@IsuW"
         removeHeader: false
 
     # Basic auth for Traefik dashboard
     traefik-auth:
       basicAuth:
         users:
-          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/"
+          - "admin:9MHCQWSADSB@IsuW"
         removeHeader: false
 
     # IP whitelist middleware (optional)
     ip-whitelist:
       ipWhiteList:
         sourceRange:
-          - "127.0.0.1/32"
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
+          - "admin:9MHCQWSADSB@IsuW"
+          - "admin:9MHCQWSADSB@IsuW"
+          - "admin:9MHCQWSADSB@IsuW"
+          - "admin:9MHCQWSADSB@IsuW"

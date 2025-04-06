@@ -1,0 +1,49 @@
+# LibreChat Configuration Template
+# This file serves as a reference for all possible LibreChat configuration options
+# Copy this file to config/librechat/librechat.yaml and modify as needed
+
+# Configuration version
+version: "1.0.0"
+
+# Cache settings
+# Whether to enable caching
+cache: true
+
+# Endpoints configuration
+# These settings control the available endpoints for LibreChat
+endpoints:
+  # Custom endpoints (e.g., Ollama)
+  custom:
+    - name: "Ollama"                   # Display name for the endpoint
+      # DO NOT EDIT THIS DIRECTLY - Use generate_secrets.sh to generate a secure value
+      apiKey: ""                       # API key for authentication (will be auto-generated)
+      baseURL: "http://ollama:11434/v1/" # Base URL for the API
+      models:
+        default: [                     # Default models to use
+          "tinyllama"
+        ]
+      titleConvo: true                 # Whether to enable conversation titles
+      titleModel: "tinyllama"          # Model to use for generating titles
+      summarize: false                 # Whether to enable summarization
+      summaryModel: "tinyllama"        # Model to use for summarization
+      forcePrompt: false               # Whether to force prompt
+      modelDisplayLabel: "Ollama"      # Display label for the model
+
+# Advanced settings
+# These settings control advanced features of LibreChat
+advanced:
+  # Logging settings
+  logging:
+    level: "info"                      # Log level (debug, info, warn, error)
+    format: "json"                     # Log format (json, text)
+    
+  # Performance settings
+  performance:
+    concurrentRequests: 5              # Maximum number of concurrent requests
+    requestTimeout: 60000              # Request timeout in milliseconds
+    
+  # Security settings
+  security:
+    rateLimiting: true                 # Whether to enable rate limiting
+    maxRequestsPerMinute: 100          # Maximum requests per minute
+    trustProxy: false                  # Whether to trust proxy headers
