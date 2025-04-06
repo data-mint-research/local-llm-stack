@@ -1,0 +1,26 @@
+# modules/security/docker-compose.yml
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  traefik:
+    image: traefik:${TRAEFIK_VERSION:-v2.10.4}
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik:/etc/traefik
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

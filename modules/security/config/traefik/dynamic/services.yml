@@ -1,0 +1,109 @@
+# Traefik dynamic configuration for services
+
+http:
+  routers:
+    # LibreChat router configuration
+    librechat:
+      rule: "Host(`librechat.local`)"
+      service: librechat
+      entryPoints:
+        - web
+        - websecure
+      # TLS configuration disabled for testing
+      middlewares:
+        - securityHeaders
+        - librechat-ratelimit
+
+    # Ollama API router configuration
+    ollama:
+      rule: "Host(`ollama.local`)"
+      service: ollama
+      entryPoints:
+        - web
+        - websecure
+      # TLS configuration disabled for testing
+      middlewares:
+        - securityHeaders
+        - ollama-auth
+        - ollama-ratelimit
+
+    # Traefik dashboard router (secured with basic auth)
+    traefik-dashboard:
+      rule: "Host(`traefik.local`)"
+      service: api@internal
+      entryPoints:
+        - web
+        - websecure
+      # TLS configuration disabled for testing
+      middlewares:
+        - traefik-auth
+        - securityHeaders
+
+  services:
+    librechat:
+      loadBalancer:
+        servers:
+          - url: "http://librechat:3080"
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: "100ms"
+
+    ollama:
+      loadBalancer:
+        servers:
+          - url: "http://ollama:11434"
+        passHostHeader: true
+        responseForwarding:
+          flushInterval: "100ms"
+
+  middlewares:
+    # Security headers for all services
+    securityHeaders:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        contentSecurityPolicy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'"
+        referrerPolicy: "strict-origin-when-cross-origin"
+        permissionsPolicy: "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+
+    # Rate limiting for LibreChat
+    librechat-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m
+
+    # Rate limiting for Ollama API
+    ollama-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m
+
+    # Basic auth for Ollama API
+    ollama-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/"
+        removeHeader: false
+
+    # Basic auth for Traefik dashboard
+    traefik-auth:
+      basicAuth:
+        users:
+          - "admin:$apr1$q8eZFHjF$Fvmkk//V6Btlaf2i/ju5n/"
+        removeHeader: false
+
+    # IP whitelist middleware (optional)
+    ip-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"

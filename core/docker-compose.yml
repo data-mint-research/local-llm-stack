@@ -1,0 +1,131 @@
+# core/docker-compose.yml
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    driver: bridge
+
+services:
+  # Each component in its own container with explicit version pinning
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.1.27}
+    container_name: ollama
+    volumes:
+      - ../data/ollama:/root/.ollama
+      - ../data/models:/models
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_MODELS_PATH=/root/.ollama/models
+    ports:
+      - "${HOST_PORT_OLLAMA:-11434}:11434"
+    deploy:
+      resources:
+        limits:
+          cpus: "${OLLAMA_CPU_LIMIT:-0.75}"
+          memory: ${OLLAMA_MEMORY_LIMIT:-16G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "(echo > /dev/tcp/localhost/11434) 2>/dev/null || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  mongodb:
+    image: mongo:${MONGODB_VERSION:-6.0.6}
+    container_name: mongodb
+    volumes:
+      - ../data/mongodb:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: ${MONGODB_MEMORY_LIMIT:-2G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  meilisearch:
+    image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
+    container_name: meilisearch
+    volumes:
+      - ../data/meilisearch:/meili_data
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=production
+      - MEILI_MASTER_KEY=masterKey123456789
+    deploy:
+      resources:
+        limits:
+          memory: ${MEILISEARCH_MEMORY_LIMIT:-1G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:7700/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  librechat:
+    image: librechat/librechat:${LIBRECHAT_VERSION:-latest}
+    container_name: librechat
+    volumes:
+      - ../data/librechat:/app/data
+      - ../config/librechat/librechat.yaml:/app/librechat.yaml
+      - ../data/librechat/.env:/app/.env
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/librechat
+      - MEILI_HOST=http://meilisearch:7700
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_API_BASE_URL=http://ollama:11434/api
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_API_KEY=${OLLAMA_API_KEY:-dummy-api-key}
+      - OLLAMA_PROXY=http://ollama:11434
+      - ENDPOINTS=ollama
+      - OLLAMA_MODELS=${DEFAULT_MODELS:-tinyllama}
+      - PORT=3080
+      - HOST=0.0.0.0
+      - ENABLE_MEILISEARCH=true
+      - ENABLE_AUTH=${ENABLE_AUTH:-true}
+      - ALLOW_SOCIAL_LOGIN=${ALLOW_SOCIAL_LOGIN:-false}
+      - ALLOW_REGISTRATION=${ALLOW_REGISTRATION:-true}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@local.host}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-}
+      - JWT_SECRET=${JWT_SECRET:-}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-}
+      - SESSION_SECRET=${SESSION_SECRET:-}
+      - CRYPT_SECRET=${CRYPT_SECRET:-}
+      - CREDS_KEY=${CREDS_KEY:-}
+      - CREDS_IV=${CREDS_IV:-}
+    ports:
+      - "${HOST_PORT_LIBRECHAT:-3080}:3080"
+    deploy:
+      resources:
+        limits:
+          cpus: "${LIBRECHAT_CPU_LIMIT:-0.50}"
+          memory: ${LIBRECHAT_MEMORY_LIMIT:-4G}
+    restart: unless-stopped
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:3080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

@@ -1,0 +1,24 @@
+# modules/scaling/docker-compose.yml
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  load-balancer:
+    image: nginx:${NGINX_VERSION:-1.25.3}
+    container_name: load-balancer
+    ports:
+      - "${HOST_PORT_LOAD_BALANCER:-8080}:80"
+    volumes:
+      - ../../config/nginx:/etc/nginx/conf.d
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

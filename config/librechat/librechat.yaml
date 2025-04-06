@@ -1,0 +1,22 @@
+# LibreChat Configuration
+version: "1.0.0"
+
+# Cache settings
+cache: true
+
+# Endpoints configuration
+endpoints:
+  custom:
+    - name: "Ollama"
+      apiKey: "dummy-api-key"
+      baseURL: "http://ollama:11434/v1/"
+      models:
+        default: [
+          "tinyllama"
+        ]
+      titleConvo: true
+      titleModel: "tinyllama"
+      summarize: false
+      summaryModel: "tinyllama"
+      forcePrompt: false
+      modelDisplayLabel: "Ollama"

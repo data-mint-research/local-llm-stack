@@ -1,0 +1,86 @@
+# Traefik main configuration
+
+# Global settings
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# Entry points configuration
+entryPoints:
+  web:
+    address: ":80"
+    # HTTP to HTTPS redirect disabled for testing
+  websecure:
+    address: ":443"
+    # TLS configuration disabled for testing
+  metrics:
+    address: ":8082"
+
+# API and dashboard configuration
+api:
+  dashboard: true
+  # Set to insecure mode for testing
+  insecure: true
+
+# Docker provider configuration
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: llm-stack-network
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
+
+# Certificate resolvers for HTTPS
+certificatesResolvers:
+  default:
+    acme:
+      email: "admin@example.com"
+      storage: "/etc/traefik/acme.json"
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+# TLS options
+tls:
+  options:
+    modern:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+        - CurveP256
+      sniStrict: true
+
+# Log configuration
+log:
+  level: "INFO"  # DEBUG, INFO, WARN, ERROR, FATAL
+  format: json
+
+# Access log configuration
+accessLog:
+  filePath: "/var/log/traefik/access.log"
+  bufferingSize: 100
+  format: json
+  fields:
+    headers:
+      names:
+        User-Agent: keep
+        Authorization: drop
+        Content-Type: keep
+
+# Metrics configuration
+metrics:
+  prometheus:
+    entryPoint: metrics
+    addEntryPointsLabels: true
+    addServicesLabels: true
+    manualRouting: true

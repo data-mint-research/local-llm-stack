@@ -1,0 +1,88 @@
+#!/bin/bash
+# llm - Unified CLI for LOCAL-LLM-STACK
+
+# Get the absolute path of the script directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Source common functions
+source "$SCRIPT_DIR/lib/common.sh"
+
+# Display usage information with improved formatting
+show_usage() {
+  echo "LOCAL-LLM-Stack CLI"
+  echo "==================="
+  echo ""
+  echo "Usage: llm [command] [options]"
+  echo ""
+  echo "Commands:"
+  # Sort commands for consistent display
+  for cmd in $(echo "${!COMMANDS[@]}" | tr ' ' '\n' | sort); do
+    printf "  %-15s %s\n" "$cmd" "${COMMANDS[$cmd]}"
+  done
+  echo ""
+  echo "Examples:"
+  echo "  llm start              Start all components"
+  echo "  llm start --with monitoring  Start with monitoring module"
+  echo "  llm status             Show component status"
+  echo "  llm help start         Show help for start command"
+  echo ""
+  echo "Run 'llm help [command]' for more information on a command."
+}
+
+# Main command router
+main() {
+  # Change to the base directory
+  cd "$SCRIPT_DIR" || handle_error 1 "Failed to change to script directory"
+  
+  local command="$1"
+  shift || true
+  
+  # If no command is provided, show usage
+  if [[ -z "$command" ]]; then
+    show_usage
+    exit 0
+  fi
+  
+  # Check if the command exists
+  if [[ ! " ${!COMMANDS[@]} " =~ " ${command} " ]]; then
+    echo -e "${RED}Error: Unknown command: $command${NC}"
+    echo ""
+    show_usage
+    exit 1
+  fi
+  
+  # Execute the command
+  case "$command" in
+    start)
+      start_command "$@"
+      ;;
+    stop)
+      stop_command "$@"
+      ;;
+    status)
+      status_command "$@"
+      ;;
+    debug)
+      debug_command "$@"
+      ;;
+    models)
+      models_command "$@"
+      ;;
+    config)
+      config_command "$@"
+      ;;
+    generate-secrets)
+      generate_secrets_command
+      ;;
+    help)
+      help_command "$@"
+      ;;
+    *)
+      show_usage
+      exit 1
+      ;;
+  esac
+}
+
+# Execute main function with all arguments
+main "$@"

@@ -1,0 +1,31 @@
+# core/meilisearch.yml
+# Meilisearch-specific configuration
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:${MEILISEARCH_VERSION:-latest}
+    container_name: meilisearch
+    volumes:
+      - ../data/meilisearch:/meili_data
+    environment:
+      - MEILI_NO_ANALYTICS=true
+      - MEILI_ENV=production
+      - MEILI_MASTER_KEY=masterKey123456789
+    deploy:
+      resources:
+        limits:
+          memory: ${MEILISEARCH_MEMORY_LIMIT:-1G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:7700/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

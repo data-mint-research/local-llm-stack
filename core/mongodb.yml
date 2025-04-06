@@ -1,0 +1,27 @@
+# core/mongodb.yml
+# MongoDB-specific configuration
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  mongodb:
+    image: mongo:${MONGODB_VERSION:-6.0.6}
+    container_name: mongodb
+    volumes:
+      - ../data/mongodb:/data/db
+    deploy:
+      resources:
+        limits:
+          memory: ${MONGODB_MEMORY_LIMIT:-2G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

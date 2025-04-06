@@ -1,0 +1,38 @@
+FROM tinyllama
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER stop "User:"
+PARAMETER stop "Assistant:"
+
+# Test model for LOCAL-LLM-STACK
+# This is a small, fast model for testing purposes
+
+# System prompt for testing
+SYSTEM """
+You are a helpful assistant for testing the LOCAL-LLM-STACK system.
+Keep your responses brief and to the point.
+This is a test model, so performance is more important than detailed responses.
+"""
+
+# Test prompts for verification
+# These prompts can be used to test different aspects of the model
+
+# Basic functionality test
+# Prompt: "Hello, are you working?"
+# Expected response: A simple confirmation that the model is working
+
+# Quantization test
+# Prompt: "Perform a simple calculation: 25 * 4"
+# Expected response: The correct calculation result (100)
+
+# Memory test
+# Prompt: "My name is Tester. What's my name?"
+# Expected response: Recognition that the user's name is Tester
+
+# Parameter test
+# Prompt: "Generate a random number between 1 and 10"
+# Expected response: A random number influenced by the temperature parameter
+
+# Test different quantization levels by setting the QUANTIZATION_LEVEL environment variable
+# Options: none, 8bit, 4bit, 3bit
+PARAMETER quantization ${QUANTIZATION_LEVEL}

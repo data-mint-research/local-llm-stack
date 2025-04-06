@@ -1,0 +1,44 @@
+# modules/monitoring/docker-compose.yml
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-v2.45.0}
+    container_name: prometheus
+    volumes:
+      - ../monitoring/config/prometheus:/etc/prometheus
+      - ../../data/prometheus:/prometheus
+    ports:
+      - "${HOST_PORT_PROMETHEUS:-9090}:9090"
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+
+  grafana:
+    image: grafana/grafana:${GRAFANA_VERSION:-10.0.3}
+    container_name: grafana
+    user: "1000:1000"
+    volumes:
+      - ../../data/grafana:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-}
+    ports:
+      - "${HOST_PORT_GRAFANA:-3000}:3000"
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    depends_on:
+      prometheus:
+        condition: service_started
+    healthcheck:
+      test:
+        ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

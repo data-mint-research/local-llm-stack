@@ -1,0 +1,43 @@
+# core/librechat.yml
+# LibreChat-specific configuration
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  librechat:
+    image: ghcr.io/librechat-dev/librechat:${LIBRECHAT_VERSION:-0.6.9}
+    container_name: librechat
+    volumes:
+      - ../data/librechat:/app/data
+      - ../config/librechat/librechat.yaml:/app/librechat.yaml
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/librechat
+      - MEILI_HOST=http://meilisearch:7700
+      - OLLAMA_HOST=http://ollama:11434
+      - OLLAMA_API_BASE_URL=http://ollama:11434/api
+      - ENDPOINTS=ollama
+      - OLLAMA_MODELS=${DEFAULT_MODELS:-llama3,mistral,gemma,phi3}
+      - PORT=3080
+      - HOST=0.0.0.0
+      - ENABLE_MEILISEARCH=true
+      - ENABLE_AUTH=true
+      - ALLOW_REGISTRATION=true
+      - ADMIN_EMAIL=admin@local.host
+      - ADMIN_PASSWORD=adminpassword
+    ports:
+      - "${HOST_PORT_LIBRECHAT:-3080}:3080"
+    deploy:
+      resources:
+        limits:
+          cpus: "${LIBRECHAT_CPU_LIMIT:-0.50}"
+          memory: ${LIBRECHAT_MEMORY_LIMIT:-4G}
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - meilisearch
+      - ollama
+    networks:
+      - llm-stack-network

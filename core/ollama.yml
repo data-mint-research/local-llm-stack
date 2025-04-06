@@ -1,0 +1,34 @@
+# core/ollama.yml
+# Ollama-specific configuration
+version: "3.8"
+
+networks:
+  llm-stack-network:
+    external: true
+
+services:
+  ollama:
+    image: ollama/ollama:${OLLAMA_VERSION:-0.1.27}
+    container_name: ollama
+    volumes:
+      - ../data/ollama:/root/.ollama
+      - ../data/models:/models
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_MODELS_PATH=/root/.ollama/models
+    ports:
+      - "${HOST_PORT_OLLAMA:-11434}:11434"
+    deploy:
+      resources:
+        limits:
+          cpus: "${OLLAMA_CPU_LIMIT:-0.75}"
+          memory: ${OLLAMA_MEMORY_LIMIT:-16G}
+    restart: unless-stopped
+    networks:
+      - llm-stack-network
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/11434 && echo 'API is up' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

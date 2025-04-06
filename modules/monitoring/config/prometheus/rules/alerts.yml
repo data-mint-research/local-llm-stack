@@ -1,0 +1,72 @@
+groups:
+  - name: local-llm-stack-alerts
+    rules:
+      # Container alerts
+      - alert: ContainerDown
+        expr: absent(container_last_seen{name=~"ollama|librechat|mongodb|meilisearch|redis|traefik"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container {{ $labels.name }} is down"
+          description: "Container {{ $labels.name }} has been down for more than 1 minute."
+
+      # High CPU usage alerts
+      - alert: HighCpuUsage
+        expr: sum by (name) (rate(container_cpu_usage_seconds_total{name=~"ollama|librechat|mongodb|meilisearch|redis|traefik"}[5m])) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage in {{ $labels.name }}"
+          description: "Container {{ $labels.name }} has high CPU usage (> 80%) for more than 5 minutes."
+
+      # High memory usage alerts
+      - alert: HighMemoryUsage
+        expr: container_memory_usage_bytes{name=~"ollama|librechat|mongodb|meilisearch|redis|traefik"} / container_spec_memory_limit_bytes{name=~"ollama|librechat|mongodb|meilisearch|redis|traefik"} > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage in {{ $labels.name }}"
+          description: "Container {{ $labels.name }} is using more than 85% of its memory limit for more than 5 minutes."
+
+      # Disk space alerts
+      - alert: LowDiskSpace
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on host"
+          description: "Host has less than 10% free disk space."
+
+      # Ollama specific alerts
+      - alert: OllamaHighLatency
+        expr: rate(ollama_request_duration_seconds_sum[5m]) / rate(ollama_request_duration_seconds_count[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency in Ollama"
+          description: "Ollama is experiencing high latency (>5s) for requests."
+
+      # MongoDB specific alerts
+      - alert: MongoDBHighConnections
+        expr: mongodb_connections{state="current"} > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of MongoDB connections"
+          description: "MongoDB has more than 100 connections for more than 5 minutes."
+
+      # Redis specific alerts
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis is using more than 80% of its maximum memory for more than 5 minutes."
